@@ -12,7 +12,7 @@ int main(int argc, char *argv[])
     Stack *stack = new_stack(sizeof(Produc));
 
     printf("%d\n", stack_size(stack));
-    printf("%d\n", stack_rsize(stack));
+    printf("%d\n", stack_size(stack));
 
     Produc p1;
     p1.left = "E";
@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
     stack_push(stack, &p1);
 
     printf("%d\n", stack_size(stack));
-    printf("%d\n", stack_rsize(stack));
+    printf("%d\n", stack_size(stack));
 
     {
         {
@@ -36,16 +36,16 @@ int main(int argc, char *argv[])
     }
 
     printf("%d\n", stack_size(stack));
-    printf("%d\n", stack_rsize(stack));
+    printf("%d\n", stack_size(stack));
     printf("----------\n");
 
     Produc *t = stack_pop(stack);
     printf("%d\n", t);
     printf("%s\t%s\t%s\n", t->left, t->symbol, t->right);
-    printf("%d\n", stack_rsize(stack));
+    printf("%d\n", stack_size(stack));
     t = stack_pop(stack);
     printf("%s\t%s\t%s\n", t->left, t->symbol, t->right);
-    printf("%d\n", stack_rsize(stack));
+    printf("%d\n", stack_size(stack));
 
     stack_destorya(stack);
 }

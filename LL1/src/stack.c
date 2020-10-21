@@ -64,11 +64,6 @@ int stack_popp(Stack *st, void *value)
 
 int stack_size(Stack *st)
 {
-    return st->size;
-}
-
-int stack_rsize(Stack *st)
-{
     if (!st->top)
     {
         return 0;

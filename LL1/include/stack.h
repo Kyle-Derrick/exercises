@@ -30,8 +30,6 @@ extern void* stack_pop(Stack *st);
 extern int stack_popp(Stack *st, void *value);
 //get the stack size
 extern int stack_size(Stack *st);
-//get the stack with a loop
-extern int stack_rsize(Stack *st);
 //destory the stack and stack node, retain the value
 extern void stack_destory(Stack *st);
 //destory the stack,stack node and value, include the value
