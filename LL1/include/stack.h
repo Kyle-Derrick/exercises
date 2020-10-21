@@ -12,24 +12,24 @@ typedef struct _StackNode_ _StackNode_;
 //stack struct
 struct Stack
 {
-    int type;
-    int size;
+    size_t type;
+    size_t size;
     _StackNode_ *top;
 };
 typedef struct Stack Stack;
 
 //get a new stack
-extern Stack* new_stack(int type);
+extern Stack* new_stack(size_t type);
 //push a node to stack
 extern Stack* stack_push(Stack *st, void *value);
 //push a node to stack, the node's value in a new space
 extern Stack* stack_pushn(Stack *st, void *value);
-//get the top node of stack, the value in a new space
+//get the top node of stack, the value need free when not use
 extern void* stack_pop(Stack *st);
 //get the top node of stack, the value in the value param
 extern int stack_popp(Stack *st, void *value);
 //get the stack size
-extern int stack_size(Stack *st);
+extern size_t stack_size(Stack *st);
 //destory the stack and stack node, retain the value
 extern void stack_destory(Stack *st);
 //destory the stack,stack node and value, include the value

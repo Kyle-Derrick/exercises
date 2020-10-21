@@ -11,6 +11,9 @@ int main(int argc, char *argv[])
 {
     Stack *stack = new_stack(sizeof(Produc));
 
+    printf("%d\n", sizeof(Produc));
+    printf("%d\n", sizeof(size_t));
+    printf("%d\n", sizeof(_StackNode_*));
     printf("%d\n", stack_size(stack));
     printf("%d\n", stack_size(stack));
 

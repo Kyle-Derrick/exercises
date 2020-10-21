@@ -2,10 +2,10 @@
 #include <string.h>
 #include "stack.h"
 
-const int _STACK_TYPE_SIZE_ = sizeof(Stack);
-const int _STACK_NODE_TYPE_SIZE_ = sizeof(_StackNode_);
+const size_t _STACK_TYPE_SIZE_ = sizeof(Stack);
+const size_t _STACK_NODE_TYPE_SIZE_ = sizeof(_StackNode_);
 
-Stack* new_stack(int type)
+Stack* new_stack(size_t type)
 {
     Stack *stack = malloc(_STACK_TYPE_SIZE_);
     stack->size = 0;
@@ -62,14 +62,14 @@ int stack_popp(Stack *st, void *value)
     return 0;
 }
 
-int stack_size(Stack *st)
+size_t stack_size(Stack *st)
 {
     if (!st->top)
     {
         return 0;
     }
     _StackNode_ *tmp = st->top;
-    int size = 0;
+    size_t size = 0;
     do
     {
         size++;
