@@ -178,56 +178,73 @@ Queue* queue_updaten(Queue *qe, size_t index, void *value)
     return queue_update(qe, index, tmp);
 }
 
-//待续
-Queue* queue_indexOf(Queue *qe, void *value)
+size_t queue_indexOf(Queue *qe, void *value)
 {
-    if (index > qe->size-1 || index < 0 || qe->size == 0)
+    if (qe->size == 0)
     {
-        return qe;
+        return -1;
     }
 
+    size_t index = 0;
     _QueueNode_ *tmp = qe->first;
-    while (index--)
+    do
     {
-        tmp = tmp->next;
-    }
+        if (!memcmp(tmp->value, value, qe->type))
+        {
+            return index;
+        }
+        index++;
+    }while ((tmp = tmp->next));
 
-    tmp->value = value;
-
-    return qe;
+    return -1;
 }
 
-Queue* queue_updaten(Queue *qe, size_t index, void *value)
+size_t queue_indexOff(Queue *qe, void *value, int fun(void*, void*, size_t))
 {
-    if (index > qe->size-1 || index < 0 || qe->size == 0)
+    if (qe->size == 0)
     {
-        return qe;
+        return -1;
     }
-    void *tmp = malloc(qe->type);
-    memcpy(tmp, value, qe->type);
-    return queue_update(qe, index, tmp);
+
+    size_t index = 0;
+    _QueueNode_ *tmp = qe->first;
+    do
+    {
+        if (!fun(tmp->value, value, qe->type))
+        {
+            return index;
+        }
+        index++;
+    }while ((tmp = tmp->next));
+
+    return -1;
 }
 
-void* queue_pop(Queue *qe)
+void* queue_shift(Queue *qe)
 {
-    if (!qe->last)
+    if (!qe->first)
     {
         return NULL;
     }
     
-    _QueueNode_ *last = qe->last;
-    void *value = last->value;
-    qe->last = last->next;
-    free(last);
+    _QueueNode_ *first = qe->first;
+    void *value = first->value;
+    qe->first = first->next;
+    if (first == qe->last)
+    {
+        qe->last = first->next;
+    }
+    
+    free(first);
     qe->size--;
 
     return value;
 }
 
-int queue_popp(Queue *qe, void *value)
+int queue_shiftp(Queue *qe, void *value)
 {
     void *tmp;
-    if (!(tmp = queue_pop(qe)))
+    if (!(tmp = queue_shift(qe)))
     {
         return -1;
     }
@@ -235,6 +252,22 @@ int queue_popp(Queue *qe, void *value)
     free(tmp);
 
     return 0;
+}
+
+void* queue_to_array(Queue *qe)
+{
+    if (qe->size == 0)
+    {
+        return NULL;
+    }
+
+    _QueueNode_ *tmp = qe->first;
+    void *arr = malloc(qe->size * qe->type);
+    do
+    {
+        
+    } while (tmp->next);
+    
 }
 
 size_t queue_size(Queue *qe)
@@ -255,17 +288,17 @@ size_t queue_size(Queue *qe)
 
 void queue_destory(Queue *qe)
 {
-    while (queue_pop(qe));
+    while (queue_shift(qe));
     free(qe);
 }
 
 void queue_destorya(Queue *qe)
 {
-    void *tmp = queue_pop(qe);
+    void *tmp = queue_shift(qe);
     while (tmp)
     {
         free(tmp);
-        tmp = queue_pop(qe);
+        tmp = queue_shift(qe);
     }
     free(qe);
 }

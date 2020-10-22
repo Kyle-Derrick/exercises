@@ -7,11 +7,18 @@ typedef struct{
     char *right;
 } Produc;
 
+char* test()
+{
+    char *t = "abcdef";
+    return t;
+}
+
 int main(int argc, char *argv[])
 {
     Stack *stack = new_stack(sizeof(Produc));
 
-    printf("%d\n", sizeof(Produc));
+    printf("%d\n", test());
+    printf("%s\n", test());
     printf("%d\n", sizeof(size_t));
     printf("%d\n", sizeof(_StackNode_*));
     printf("%d\n", stack_size(stack));
