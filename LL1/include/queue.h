@@ -38,21 +38,23 @@ extern Queue* queue_update(Queue *qe, size_t index, void *value);
 //update node of queue, the node's value in a new space
 extern Queue* queue_updaten(Queue *qe, size_t index, void *value);
 //search node of queue,return the index, if return -1, node not in queue
-extern size_t queue_indexOf(Queue *qe, void *value);
+extern ssize_t queue_indexOf(Queue *qe, void *value);
 //search node of queue with cmp function,return the index, if return -1, node not in queue
-extern size_t queue_indexOff(Queue *qe, void *value, int fun(void*, void*, size_t));
+extern ssize_t queue_indexOff(Queue *qe, void *value, int fun(void*, void*, size_t));
 //compared queue,return the first diffrent node index, if return -1, queue is identical
-extern size_t queue_cmp(Queue *qe);
+extern int queue_cmp(Queue *qe, Queue *qe2);
 //compared queue,return the first diffrent node index with cmp function, if return -1, queue is identical
-extern size_t queue_cmpf(Queue *qe, int fun(void*, void*));
+extern int queue_cmpf(Queue *qe, Queue *qe2, int fun(void*, void*, size_t));
 //get node of queue
 extern void* queue_get(Queue *qe, size_t index);
+extern void queue_getn(Queue *qe, size_t index, void *value);
 //get the top node of queue, the value need free when not use
 extern void* queue_shift(Queue *qe);
 //get the top node of queue, the value in the value param
 extern int queue_shiftp(Queue *qe, void *value);
 //conversion queue to array,
 extern void* queue_to_array(Queue *qe);
+extern void* queue_to_arrayn(Queue *qe);
 //get the queue size
 extern size_t queue_size(Queue *qe);
 //destory the queue and queue node, retain the value

@@ -29,10 +29,16 @@ extern void* stack_pop(Stack *st);
 //get the top node of stack, the value in the value param
 extern int stack_popp(Stack *st, void *value);
 //get the stack size
-extern size_t stack_size(Stack *st);
+extern size_t stack_size(const Stack *st);
 //destory the stack and stack node, retain the value
 extern void stack_destory(Stack *st);
 //destory the stack,stack node and value, include the value
 extern void stack_destorya(Stack *st);
+
+extern void *stack_each(Stack *st, void *fun(Stack*,
+        _StackNode_*,_StackNode_*,
+        _StackNode_**,size_t,void*));
+
+extern void *stack_to_array(Stack *st, int flags);
 
 #endif

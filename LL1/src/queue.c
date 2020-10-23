@@ -2,12 +2,12 @@
 #include <string.h>
 #include "queue.h"
 
-const size_t _STACK_TYPE_SIZE_ = sizeof(Queue);
-const size_t _STACK_NODE_TYPE_SIZE_ = sizeof(_QueueNode_);
+const size_t _QUEUE_TYPE_SIZE_ = sizeof(Queue);
+const size_t _QUEUE_NODE_TYPE_SIZE_ = sizeof(_QueueNode_);
 
 Queue* new_queue(size_t type)
 {
-    Queue *queue = malloc(_STACK_TYPE_SIZE_);
+    Queue *queue = malloc(_QUEUE_TYPE_SIZE_);
     queue->size = 0;
     queue->type = type;
     queue->first = NULL;
@@ -18,7 +18,7 @@ Queue* new_queue(size_t type)
 
 Queue* queue_add(Queue *qe, void *value)
 {
-    _QueueNode_ *node = malloc(_STACK_NODE_TYPE_SIZE_);
+    _QueueNode_ *node = malloc(_QUEUE_NODE_TYPE_SIZE_);
     node->value = value;
     node->next = NULL;
     switch (qe->size)
@@ -55,7 +55,7 @@ Queue* queue_insert(Queue *qe, size_t index, void *value)
         index = 0;
     }
     
-    _QueueNode_ *node = malloc(_STACK_NODE_TYPE_SIZE_);
+    _QueueNode_ *node = malloc(_QUEUE_NODE_TYPE_SIZE_);
     node->value = value;
     node->next = NULL;
 
@@ -67,24 +67,26 @@ Queue* queue_insert(Queue *qe, size_t index, void *value)
         break;
     
     default:
-        _QueueNode_ *tmplast = NULL;
-        _QueueNode_ *tmp = qe->first;
-        while (index--)
         {
-            tmplast = tmp;
-            tmp = tmp->next;
-        }
+            _QueueNode_ *tmplast = NULL;
+            _QueueNode_ *tmp = qe->first;
+            while (index--)
+            {
+                tmplast = tmp;
+                tmp = tmp->next;
+            }
 
-        if (tmplast)
-        {
-            tmplast->next = node;
-        }else
-        {
-            qe->first = node;
+            if (tmplast)
+            {
+                tmplast->next = node;
+            }else
+            {
+                qe->first = node;
+            }
+            
+            node->next = tmp;
+            break;
         }
-        
-        node->next = tmp;
-        break;
     }
     qe->size++;
 
@@ -118,25 +120,27 @@ void* queue_del(Queue *qe, size_t index)
         return NULL;
     
     default:
-        _QueueNode_ *tmplast = NULL;
-        _QueueNode_ *tmp = qe->first;
-        while (index--)
         {
-            tmplast = tmp;
-            tmp = tmp->next;
-        }
+            _QueueNode_ *tmplast = NULL;
+            _QueueNode_ *tmp = qe->first;
+            while (index--)
+            {
+                tmplast = tmp;
+                tmp = tmp->next;
+            }
 
-        if (tmplast)
-        {
-            tmplast->next = tmp->next;
-        }else
-        {
-            qe->first = tmp->next;
+            if (tmplast)
+            {
+                tmplast->next = tmp->next;
+            }else
+            {
+                qe->first = tmp->next;
+            }
+            
+            free(tmp);
+            qe->size--;
+            return tmp;
         }
-        
-        free(tmp);
-        qe->size--;
-        return tmp;
     }
 }
 
@@ -178,7 +182,7 @@ Queue* queue_updaten(Queue *qe, size_t index, void *value)
     return queue_update(qe, index, tmp);
 }
 
-size_t queue_indexOf(Queue *qe, void *value)
+ssize_t queue_indexOf(Queue *qe, void *value)
 {
     if (qe->size == 0)
     {
@@ -199,7 +203,7 @@ size_t queue_indexOf(Queue *qe, void *value)
     return -1;
 }
 
-size_t queue_indexOff(Queue *qe, void *value, int fun(void*, void*, size_t))
+ssize_t queue_indexOff(Queue *qe, void *value, int fun(void*, void*, size_t))
 {
     if (qe->size == 0)
     {
@@ -218,6 +222,93 @@ size_t queue_indexOff(Queue *qe, void *value, int fun(void*, void*, size_t))
     }while ((tmp = tmp->next));
 
     return -1;
+}
+
+int queue_cmp(Queue *qe, Queue *qe2)
+{
+    if (qe->size != qe2->size)
+    {
+        return -1;
+    }
+    if (qe->size == 0)
+    {
+        return 0;
+    }
+
+    _QueueNode_ *tmp = qe->first;
+    _QueueNode_ *tmp2 = qe2->first;
+    do
+    {
+        if (memcmp(tmp->value, tmp2->value, qe->type))
+        {
+            return -1;
+        }
+    }while ((tmp = tmp->next) && (tmp2 = tmp2->next));
+
+    return 0;
+}
+
+int queue_cmpf(Queue *qe, Queue *qe2, int fun(void*, void*, size_t))
+{
+    if (qe->size != qe2->size)
+    {
+        return -1;
+    }
+    if (qe->size == 0)
+    {
+        return 0;
+    }
+
+    _QueueNode_ *tmp = qe->first;
+    _QueueNode_ *tmp2 = qe2->first;
+    do
+    {
+        if (fun(tmp->value, tmp2->value, qe->type))
+        {
+            return -1;
+        }
+    }while ((tmp = tmp->next) && (tmp2 = tmp2->next));
+
+    return 0;
+}
+
+void* queue_get(Queue *qe, size_t index)
+{
+    if (qe->size == 0)
+    {
+        return NULL;
+    }
+
+    _QueueNode_ *tmp = qe->first;
+    do
+    {
+        if (!index--)
+        {
+            return tmp->value;
+        }
+    }while ((tmp = tmp->next));
+
+    return NULL;
+}
+
+void queue_getn(Queue *qe, size_t index, void *value)
+{
+    if (qe->size == 0)
+    {
+        return;
+    }
+
+    _QueueNode_ *tmp = qe->first;
+    do
+    {
+        if (!index--)
+        {
+            memcpy(value, tmp->value, qe->type);
+            return;
+        }
+    }while ((tmp = tmp->next));
+
+    return;
 }
 
 void* queue_shift(Queue *qe)
@@ -261,13 +352,31 @@ void* queue_to_array(Queue *qe)
         return NULL;
     }
 
+    size_t i = 0;
+    _QueueNode_ *tmp = qe->first;
+    void **arr = malloc(qe->size * sizeof(void*));
+    do
+    {
+        *(arr+i++) = tmp->value;
+    } while (tmp->next);
+    return arr;
+}
+
+void* queue_to_arrayn(Queue *qe)
+{
+    if (qe->size == 0)
+    {
+        return NULL;
+    }
+
+    size_t i = 0;
     _QueueNode_ *tmp = qe->first;
     void *arr = malloc(qe->size * qe->type);
     do
     {
-        
+        memcpy(arr+(qe->type * i++), tmp->value, qe->type);
     } while (tmp->next);
-    
+    return arr;
 }
 
 size_t queue_size(Queue *qe)

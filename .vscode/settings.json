@@ -25,6 +25,8 @@
         "ratio": "cpp",
         "typeinfo": "cpp",
         "utility": "cpp",
-        "variant": "cpp"
+        "variant": "cpp",
+        "istream": "c",
+        "ostream": "c"
     }
 }
