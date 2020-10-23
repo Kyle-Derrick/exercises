@@ -29,6 +29,17 @@ extern Queue* queue_addn(Queue *qe, void *value);
 extern Queue* queue_insert(Queue *qe, size_t index, void *value);
 //insert a node to queue, the node's value in a new space
 extern Queue* queue_insertn(Queue *qe, size_t index, void *value);
+//插入全部
+extern Queue* queue_insert_all_arr(Queue *qe, size_t index, void *value, size_t len, int flags);
+//插入全部(非Queue拼接)
+extern Queue* queue_insert_all(Queue *q1, Queue *q2, size_t index);
+
+extern Queue* queue_concat_arr(Queue *qe, void *value, size_t len);
+
+extern Queue* queue_concat_arrn(Queue *qe, void *value, size_t len);
+
+extern Queue* queue_concat(Queue *q1, Queue *q2);
+
 //delete node of queue
 extern void* queue_del(Queue *qe, size_t index);
 //delete node of queue, include the value

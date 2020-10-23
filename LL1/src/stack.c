@@ -109,8 +109,9 @@ void *stack_each(Stack *st, void *fun(Stack*,_StackNode_*,_StackNode_*,_StackNod
         tmpnext = tmp->next;
         result = fun(st, tmplast, tmp, &tmpnext, index, result);
         tmplast = tmp;
+        tmp = tmpnext;
         index++;
-    } while (tmpnext);
+    } while (tmp);
     
     return result;
 }
@@ -121,14 +122,40 @@ void *__stack_to_array__(Stack* st, _StackNode_* last,
 {
     if (!result)
     {
-        result = calloc(st->size, sizeof(_StackNode_*));
+        result = calloc(st->size, sizeof(void*));
     }
-    _StackNode_ **tmp = result;
-    *(tmp+index) = now->value;
-    return tmp;
+    *((void**)result+index*st->type) = now->value;
+    return result;
 }
 
 void *stack_to_array(Stack *st, int flags)
 {
     return stack_each(st, __stack_to_array__);
+}
+
+Stack *stack_clone(Stack *st)
+{
+    if (!st->top)
+    {
+        return NULL;
+    }
+
+    _StackNode_ *tmp = st->top;
+    Stack *stcp = malloc(_STACK_TYPE_SIZE_);
+    stcp->type = st->type;
+    stcp->size = st->size;
+    
+    _StackNode_ *tmpnew = malloc(_STACK_NODE_TYPE_SIZE_);
+    memcpy(tmpnew->value, tmp->value, st->type);
+    tmpnew->next = NULL;
+    stcp->top = tmpnew;
+    while (tmp = tmp->next)
+    {
+        tmpnew->next = malloc(_STACK_NODE_TYPE_SIZE_);
+        tmpnew = tmpnew->next;
+        memcpy(tmpnew->value, tmp->value, st->type);
+        tmpnew->next = NULL;
+    }
+    
+    return stcp;
 }

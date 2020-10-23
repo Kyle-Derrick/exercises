@@ -40,5 +40,7 @@ extern void *stack_each(Stack *st, void *fun(Stack*,
         _StackNode_**,size_t,void*));
 //根据栈生成一个数组结构(自顶向下)
 extern void *stack_to_array(Stack *st, int flags);
+//克隆栈
+extern Stack *stack_clone(Stack *st);
 
 #endif
