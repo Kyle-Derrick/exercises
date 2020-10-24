@@ -7,6 +7,7 @@
 #define CREATE_NEW_VALUE 4
 #define DELETE_WITH_VALUE 8
 #define DELETE_OLD_VALUE_CREATE_NEW 12
+#define CLONE_NEW_QUEUE 16
 
 //创建副本
 extern void* create_replica(void *src, size_t size);

@@ -6,8 +6,35 @@
 const size_t _QUEUE_TYPE_SIZE_ = sizeof(Queue);
 const size_t _QUEUE_NODE_TYPE_SIZE_ = sizeof(_QueueNode_);
 
+_QueueNode_ *_clone_queue_node_(void *value, size_t size, int flags);
 _QueueNode_ *_get_queue_node_(Queue *qe, size_t index);
 _QueueNode_* _queue_update_with_lastnode_(Queue *qe, _QueueNode_ *lastnode, void *value, int flags);
+Queue* new_queue(size_t type);
+Queue* queue_add(Queue *qe, void *value, int flags);
+Queue *queue_clone_all(Queue *qe, int flags);
+Queue *queue_clone(Queue *qe, size_t start, size_t end, int flags);
+int queue_cmp(Queue *qe, Queue *qe2);
+int queue_cmpf(Queue *qe, Queue *qe2, int fun(const void*, const void*, size_t));
+Queue* queue_concat_arr(Queue *qe, void *value, size_t len, int flags);
+Queue* queue_concat(Queue *q1, Queue *q2, int flags);
+void* queue_del(Queue *qe, size_t index, int flags);
+void queue_destory(Queue *qe, int flags);
+void *queue_each(Queue *qe, void *arg, void *fun(Queue*,_QueueNode_*,_QueueNode_*,_QueueNode_**,size_t,void*,void*));
+void* queue_get(Queue *qe, size_t index);
+void queue_getn(Queue *qe, size_t index, void *value);
+ssize_t queue_indexOf(Queue *qe, void *value);
+ssize_t queue_indexOff(Queue *qe, void *value, int fun(const void*, const void*, size_t));
+Queue* queue_insert_all_arr(Queue *qe, size_t index, void *value, size_t len, int flags);
+Queue* queue_insert_all(Queue *q1, Queue *q2, size_t index, int flags);
+Queue* queue_insert(Queue *qe, size_t index, void *value, int flags);
+void* queue_shift(Queue *qe);
+int queue_shiftp(Queue *qe, void *value);
+size_t queue_size(Queue *qe);
+void* queue_to_array_all(Queue *qe, int flags);
+void* queue_to_array(Queue *qe, size_t start, size_t end, int flags);
+Queue *queue_update_arr_diy(Queue *qe, size_t start, size_t end, void *value, size_t len, int flags);
+Queue *queue_update_diy(Queue *q1, Queue *q2, size_t start, size_t end, int flags);
+Queue* queue_update(Queue *qe, size_t index, void *value, int flags);
 
 Queue* new_queue(size_t type)
 {
@@ -20,11 +47,9 @@ Queue* new_queue(size_t type)
     return queue;
 }
 
-Queue* queue_add(Queue *qe, void *value)
+Queue* queue_add(Queue *qe, void *value, int flags)
 {
-    _QueueNode_ *node = malloc(_QUEUE_NODE_TYPE_SIZE_);
-    node->value = value;
-    node->next = NULL;
+    _QueueNode_ *node = _clone_queue_node_(value, qe->type, flags);
     if (qe->first)
     {
         qe->last->next = node;
@@ -38,219 +63,83 @@ Queue* queue_add(Queue *qe, void *value)
     return qe;
 }
 
-Queue* queue_addn(Queue *qe, void *value)
+Queue* queue_insert(Queue *qe, size_t index, void *value, int flags)
 {
-    return queue_add(qe, create_replica(value, qe->type));
-}
-Queue* queue_insert(Queue *qe, size_t index, void *value)
-{
-    if (index >= qe->size)
-    {
-        return queue_add(qe, value);
-    }else if (index < 0)
-    {
-        index = 0;
-    }
-
-    _queue_update_with_lastnode_(qe, _get_queue_node_(qe, index), value, 1);
-
-    return qe;
-}
-
-Queue* queue_insertn(Queue *qe, size_t index, void *value)
-{
-    if (index >= qe->size)
-    {
-        return queue_addn(qe, value);
-    }
-    return queue_insert(qe, index, create_replica(value, qe->type));
+    return queue_insert_all_arr(qe, index, value, 1, flags);
 }
 
 Queue* queue_insert_all_arr(Queue *qe, size_t index, void *value, size_t len, int flags)
 {
-    if (index >= qe->size)
-    {
-        if (flags)
-        {
-            return queue_concat_arrn(qe, value, len);
-        }
-        return queue_concat_arr(qe, value, len);
-        
-    }else if (index < 0)
-    {
-        index = 0;
-    }
-
-    _QueueNode_ *tmp = _get_queue_node_(qe, index);
-    for (size_t i = 0; i < len; i++)
-    {
-        void *tmpvalue = value+i*qe->type;
-        if (flags)
-        {
-            tmpvalue = create_replica(tmpvalue, qe->type);
-        }
-        
-        tmp = _queue_update_with_lastnode_(qe, 
-                tmp, 
-                tmpvalue, 1);
-    }
-    
-    return qe;
+    int f = flags & CREATE_NEW_VALUE + INSERT_NODE;
+    return queue_update_arr_diy(qe, index, 0, value, len, f);
 }
 
-Queue* queue_insert_all(Queue *q1, Queue *q2, size_t index)
+Queue* queue_insert_all(Queue *q1, Queue *q2, size_t index, int flags)
 {
-    if (index >= q1->size)
-    {
-        return queue_concat(q1, q2);
-    }else if (index < 0)
-    {
-        return queue_concat(q2, q1);
-    }
-
-    _QueueNode_ *tmp = _get_queue_node_(q1, index);
-    _QueueNode_ *tmpnext = tmp->next;
-    if (q2->first)
-    {
-        tmp->next = q2->first;
-        q2->last->next = tmpnext;
-    }
-    
-    return q1;
+    int f = flags - flags & UPDATE_NODE + INSERT_NODE;
+    return queue_update_diy(q1, q2, index, 0, f);
 }
 
-Queue* queue_concat_arr(Queue *qe, void *value, size_t len)
+Queue* queue_concat_arr(Queue *qe, void *value, size_t len, int flags)
 {
     for (size_t i = 0; i < len; i++)
     {
         queue_add(qe, 
-                value+i*qe->type);
+                value+i*qe->type, flags);
     }
     return qe;
 }
 
-Queue* queue_concat_arrn(Queue *qe, void *value, size_t len)
+Queue* queue_concat(Queue *q1, Queue *q2, int flags)
 {
-    for (size_t i = 0; i < len; i++)
+    if (q2->first)
     {
-        queue_addn(qe, 
-                value+i*qe->type);
+        if (flags & CLONE_NEW_QUEUE)
+        {
+            q2 = queue_clone_all(q2, flags);
+        }
+    }else
+    {
+        return q1;
     }
-    return qe;
-}
-
-Queue* queue_concat(Queue *q1, Queue *q2)
-{
+    
     if (!q1->first)
     {
         q1->first = q2->first;
         q1->last = q2->last;
+    }else
+    {
+        q1->last->next = q2->first;
     }
     
-    q1->last->next = q2->first;
+    q1->size += q2->size;
+
+    if (flags & CLONE_NEW_QUEUE)
+    {
+        q2->first = NULL;
+        queue_destory(q2, NULL);
+    }
     return q1;
 }
 
-void* queue_del(Queue *qe, size_t index)
+void* queue_del(Queue *qe, size_t index, int flags)
 {
-    if (index > qe->size-1)
-    {
-        index = qe->size - 1;
-    }else if (index < 0)
-    {
-        index = 0;
-    }
-
-    switch (qe->size)
-    {
-    case 0:
-        return NULL;
-    
-    default:
-        {
-            _QueueNode_ *tmplast = NULL;
-            _QueueNode_ *tmp = qe->first;
-            while (index--)
-            {
-                tmplast = tmp;
-                tmp = tmp->next;
-            }
-
-            if (tmplast)
-            {
-                tmplast->next = tmp->next;
-            }else
-            {
-                qe->first = tmp->next;
-            }
-            
-            free(tmp);
-            qe->size--;
-            return tmp;
-        }
-    }
+    int f = DELETE_NODE + flags & DELETE_OLD_VALUE_CREATE_NEW;
+    return queue_update_arr_diy(qe, index, 0, NULL, 0, f);
 }
 
-void queue_dela(Queue *qe, size_t index)
+Queue* queue_update(Queue *qe, size_t index, void *value, int flags)
 {
-    void *tmp = queue_del(qe, index);
-    if (tmp)
-    {
-        free(tmp);
-    }
-}
-
-Queue* queue_update(Queue *qe, size_t index, void *value)
-{
-    if (index > qe->size-1 || index < 0 || qe->size == 0)
-    {
-        return qe;
-    }
-
-    _QueueNode_ *tmp = qe->first;
-    while (index--)
-    {
-        tmp = tmp->next;
-    }
-
-    tmp->value = value;
-
-    return qe;
-}
-
-Queue* queue_updaten(Queue *qe, size_t index, void *value)
-{
-    if (index > qe->size-1 || index < 0 || qe->size == 0)
-    {
-        return qe;
-    }
-    void *tmp = malloc(qe->type);
-    memcpy(tmp, value, qe->type);
-    return queue_update(qe, index, tmp);
+    int f = UPDATE_NODE + flags & DELETE_OLD_VALUE_CREATE_NEW;
+    return queue_update_arr_diy(qe, index, 0, value, 1, f);
 }
 
 ssize_t queue_indexOf(Queue *qe, void *value)
 {
-    if (qe->size == 0)
-    {
-        return -1;
-    }
-
-    size_t index = 0;
-    _QueueNode_ *tmp = qe->first;
-    do
-    {
-        if (!memcmp(tmp->value, value, qe->type))
-        {
-            return index;
-        }
-        index++;
-    }while ((tmp = tmp->next));
-
-    return -1;
+    return queue_indexOff(qe, value, memcmp);
 }
 
-ssize_t queue_indexOff(Queue *qe, void *value, int fun(void*, void*, size_t))
+ssize_t queue_indexOff(Queue *qe, void *value, int fun(const void*, const void*, size_t))
 {
     if (qe->size == 0)
     {
@@ -273,29 +162,10 @@ ssize_t queue_indexOff(Queue *qe, void *value, int fun(void*, void*, size_t))
 
 int queue_cmp(Queue *qe, Queue *qe2)
 {
-    if (qe->size != qe2->size)
-    {
-        return -1;
-    }
-    if (qe->size == 0)
-    {
-        return 0;
-    }
-
-    _QueueNode_ *tmp = qe->first;
-    _QueueNode_ *tmp2 = qe2->first;
-    do
-    {
-        if (memcmp(tmp->value, tmp2->value, qe->type))
-        {
-            return -1;
-        }
-    }while ((tmp = tmp->next) && (tmp2 = tmp2->next));
-
-    return 0;
+    return queue_cmpf(qe, qe2, memcmp);
 }
 
-int queue_cmpf(Queue *qe, Queue *qe2, int fun(void*, void*, size_t))
+int queue_cmpf(Queue *qe, Queue *qe2, int fun(const void*, const void*, size_t))
 {
     if (qe->size != qe2->size)
     {
@@ -325,6 +195,11 @@ void* queue_get(Queue *qe, size_t index)
     {
         return NULL;
     }
+    if (index == qe->size - 1)
+    {
+        return qe->last->value;
+    }
+    
 
     _QueueNode_ *tmp = qe->first;
     do
@@ -340,21 +215,11 @@ void* queue_get(Queue *qe, size_t index)
 
 void queue_getn(Queue *qe, size_t index, void *value)
 {
-    if (qe->size == 0)
+    void *v = queue_get(qe, index);
+    if (v)
     {
-        return;
+        memcpy(value, v, qe->type);
     }
-
-    _QueueNode_ *tmp = qe->first;
-    do
-    {
-        if (!index--)
-        {
-            memcpy(value, tmp->value, qe->type);
-            return;
-        }
-    }while ((tmp = tmp->next));
-
     return;
 }
 
@@ -392,38 +257,52 @@ int queue_shiftp(Queue *qe, void *value)
     return 0;
 }
 
-void* queue_to_array(Queue *qe)
+void* queue_to_array(Queue *qe, size_t start, size_t end, int flags)
 {
-    if (qe->size == 0)
+    if (start >= qe->size || start > end || (start == end && end != 0))
     {
         return NULL;
     }
 
     size_t i = 0;
+    size_t step = end - start;
+    if (!end)
+    {
+        step = qe->size - start;
+    }
+    
     _QueueNode_ *tmp = qe->first;
-    void **arr = malloc(qe->size * sizeof(void*));
+    size_t type = 0;
+    if (flags & CREATE_NEW_VALUE)
+    {
+        type = qe->type;
+    }else
+    {
+        type = sizeof(void*);
+    }
+    
+    void *arr = malloc(step * type);
     do
     {
-        *(arr+i++) = tmp->value;
-    } while (tmp->next);
+        if (i >= start)
+        {
+            if (flags & CREATE_NEW_VALUE)
+            {
+                memcpy(arr+i, tmp->value, type);
+            }else
+            {
+                memcpy(arr+i++, &(tmp->value), type);
+            }
+        }
+        
+        i++;
+    } while (tmp->next && i < end);
     return arr;
 }
 
-void* queue_to_arrayn(Queue *qe)
+void* queue_to_array_all(Queue *qe, int flags)
 {
-    if (qe->size == 0)
-    {
-        return NULL;
-    }
-
-    size_t i = 0;
-    _QueueNode_ *tmp = qe->first;
-    void *arr = malloc(qe->size * qe->type);
-    do
-    {
-        memcpy(arr+(qe->type * i++), tmp->value, qe->type);
-    } while (tmp->next);
-    return arr;
+    return queue_to_array(qe, 0, 0, flags);
 }
 
 size_t queue_size(Queue *qe)
@@ -442,19 +321,15 @@ size_t queue_size(Queue *qe)
     return qe->size;
 }
 
-void queue_destory(Queue *qe)
+void queue_destory(Queue *qe, int flags)
 {
-    while (queue_shift(qe));
-    free(qe);
-}
-
-void queue_destorya(Queue *qe)
-{
-    void *tmp = queue_shift(qe);
-    while (tmp)
+    void *tmp = NULL;
+    while (tmp = queue_shift(qe))
     {
-        free(tmp);
-        tmp = queue_shift(qe);
+        if (flags & DELETE_WITH_VALUE)
+        {
+            free(tmp);
+        }
     }
     free(qe);
 }
@@ -566,19 +441,13 @@ _QueueNode_* _queue_update_with_lastnode_(Queue *qe, _QueueNode_ *lastnode, void
     return node;
 }
 
-Queue *queue_update_arr_div(Queue *qe, size_t start, size_t end, void *value, size_t len, int flags)
+Queue *queue_update_arr_diy(Queue *qe, size_t start, size_t end, void *value, size_t len, int flags)
 {
     if (start >= qe->size)
     {
         if (flags & INSERT_NODE)
         {
-            if (flags & CREATE_NEW_VALUE)
-            {
-                return queue_concat_arrn(qe, value, len);
-            }else
-            {
-                return queue_concat_arr(qe, value, len);
-            }
+            return queue_concat_arr(qe, value, len, flags);
         }
         return qe;
     }else if (start > end && !end || (flags & INSERT_NODE) && !len)
@@ -635,4 +504,148 @@ Queue *queue_update_arr_div(Queue *qe, size_t start, size_t end, void *value, si
     }
     
     return qe;
+}
+
+Queue *queue_update_diy(Queue *q1, Queue *q2, size_t start, size_t end, int flags)
+{
+    if (start >= q1->size)
+    {
+        if (flags & INSERT_NODE)
+        {
+            return queue_concat(q1, q2, flags);
+        }
+        return q1;
+    }else if (start > end && !end)
+    {
+        return q1;
+    }
+
+    end = end > q1->size ? q1->size : end;
+
+    _QueueNode_ *tmp = _get_queue_node_(q1, start);
+    size_t step = 1;
+    if (end)
+    {
+        step = end - start;
+    }
+    
+    int f = DELETE_OLD_VALUE_CREATE_NEW & flags;
+    if (flags & DELETE_NODE)
+    {
+        for (size_t index = 0; index < step; index++)
+        {
+            tmp = _queue_update_with_lastnode_(q1, 
+                    tmp, NULL, f + DELETE_NODE);
+        }
+        
+    }
+    if (flags & INSERT_NODE)
+    {
+        if (q2->first)
+        {
+            if (flags & CLONE_NEW_QUEUE)
+            {
+                q2 = queue_clone_all(q2, flags);
+            }
+            
+            if (tmp)
+            {
+                q2->last->next = tmp->next;
+                tmp->next = q2->first;
+            }else
+            {
+                q2->last->next = q1->first;
+                q1->first = q2->first;
+            }
+            q1->size += q2->size;
+
+            if (flags & CLONE_NEW_QUEUE)
+            {
+                q2->first = NULL;
+                queue_destory(q2, NULL);
+            }
+        }
+    }
+    
+    return q1;
+}
+
+_QueueNode_ *_clone_queue_node_(void *value, size_t size, int flags)
+{
+    _QueueNode_ *tmp = malloc(_QUEUE_NODE_TYPE_SIZE_);
+    if (flags & CREATE_NEW_VALUE)
+    {
+        memcpy(tmp->value, value, size);
+    }else
+    {
+        tmp->value = value;
+    }
+    tmp->next = NULL;
+    return tmp;
+}
+
+Queue *queue_clone(Queue *qe, size_t start, size_t end, int flags)
+{
+    _QueueNode_ *tmp = qe->first;
+    Queue *qecp = malloc(_QUEUE_TYPE_SIZE_);
+    qecp->type = qe->type;
+    qecp->size = qe->size;
+    qecp->first = NULL;
+    qecp->last = NULL;
+
+    if (!qe->first || start >= qe->size || start >= end)
+    {
+        return qecp;
+    }
+    
+    _QueueNode_ *tmpnew;
+    size_t index = 0;
+    do
+    {
+        if (index == start)
+        {
+            tmpnew = _clone_queue_node_(tmp->value, qe->type, flags);
+            qecp->first = tmpnew;
+            qecp->last = tmpnew;
+        }
+        if (index > start)
+        {
+            tmpnew->next = _clone_queue_node_(tmp->value, qe->type, flags);
+            tmpnew = tmpnew->next;
+            qecp->last = tmpnew;
+        }
+        index++;
+    } while ((tmp = tmp->next) && index < end);
+    
+    return qecp;
+}
+
+Queue *queue_clone_all(Queue *qe, int flags)
+{
+    return queue_clone(qe, 0, qe->size, flags);
+}
+
+
+void *queue_each(Queue *qe, void *arg, void *fun(Queue*,_QueueNode_*,_QueueNode_*,_QueueNode_**,size_t,void*,void*))
+{
+    if (!qe->first)
+    {
+        return NULL;
+    }
+
+    _QueueNode_ *tmplaqe = NULL;
+    _QueueNode_ *tmp = qe->first;
+    _QueueNode_ *tmpnext = NULL;
+    size_t index = 0;
+    void *result = NULL;
+    do
+    {
+        tmpnext = tmp->next;
+        result = fun(qe, tmplaqe, tmp, &tmpnext, index, arg, result);
+        tmplaqe = tmp;
+        tmp = tmpnext;
+        index++;
+    } while (tmp);
+    
+    return result;
 }

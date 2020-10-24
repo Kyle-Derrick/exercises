@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "tools.h"
 #include "queue.h"
 #include "queue.h"
 
@@ -42,7 +43,7 @@ int main(int argc, char *argv[])
     p1.symbol = "->";
     p1.right = "ET";
 
-    queue_add(queue, &p1);
+    queue_add(queue, &p1, 0);
 
     printf("%d\n", queue_size(queue));
     printf("%d\n", queue_size(queue));
@@ -54,7 +55,7 @@ int main(int argc, char *argv[])
             p1.symbol = "->";
             p1.right = "TF";
 
-            queue_addn(queue, &p1);
+            queue_add(queue, &p1, 0);
         }
     }
 
@@ -70,7 +71,7 @@ int main(int argc, char *argv[])
     printf("%s\t%s\t%s\n", t->left, t->symbol, t->right);
     printf("%d\n", queue_size(queue));
 
-    queue_destorya(queue);
+    queue_destory(queue, DELETE_WITH_VALUE);
 
     char (*f)() = test;
     printf("%d\n", f);

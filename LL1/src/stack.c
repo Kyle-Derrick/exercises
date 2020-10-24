@@ -135,16 +135,17 @@ void *stack_to_array(Stack *st, int flags)
 
 Stack *stack_clone(Stack *st)
 {
-    if (!st->top)
-    {
-        return NULL;
-    }
-
     _StackNode_ *tmp = st->top;
     Stack *stcp = malloc(_STACK_TYPE_SIZE_);
     stcp->type = st->type;
     stcp->size = st->size;
+    stcp->top = NULL;
     
+    if (!st->top)
+    {
+        return stcp;
+    }
+
     _StackNode_ *tmpnew = malloc(_STACK_NODE_TYPE_SIZE_);
     memcpy(tmpnew->value, tmp->value, st->type);
     tmpnew->next = NULL;
