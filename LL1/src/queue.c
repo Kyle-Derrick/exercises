@@ -6,7 +6,8 @@
 const size_t _QUEUE_TYPE_SIZE_ = sizeof(Queue);
 const size_t _QUEUE_NODE_TYPE_SIZE_ = sizeof(_QueueNode_);
 
-_QueueNode_ *get_queue_node(Queue *qe, size_t index);
+_QueueNode_ *_get_queue_node_(Queue *qe, size_t index);
+_QueueNode_* _queue_update_with_lastnode_(Queue *qe, _QueueNode_ *lastnode, void *value, int flags);
 
 Queue* new_queue(size_t type)
 {
@@ -41,29 +42,6 @@ Queue* queue_addn(Queue *qe, void *value)
 {
     return queue_add(qe, create_replica(value, qe->type));
 }
-
-_QueueNode_* _queue_insert_with_lastnode_(Queue *qe, _QueueNode_ *lastnode, void *value)
-{
-    _QueueNode_ *node = malloc(_QUEUE_NODE_TYPE_SIZE_);
-    node->value = value;
-    node->next = NULL;
-    
-
-    if (lastnode)
-    {
-        _QueueNode_ *tmpnext = lastnode->next;
-        lastnode->next = node;
-        node->next = tmpnext;
-    }else
-    {
-        node->next = qe->first;
-        qe->first = node;
-    }
-    
-    qe->size++;
-
-    return node;
-}
 Queue* queue_insert(Queue *qe, size_t index, void *value)
 {
     if (index >= qe->size)
@@ -74,7 +52,7 @@ Queue* queue_insert(Queue *qe, size_t index, void *value)
         index = 0;
     }
 
-    _queue_insert_with_lastnode_(qe, get_queue_node(qe, index), value);
+    _queue_update_with_lastnode_(qe, _get_queue_node_(qe, index), value, 1);
 
     return qe;
 }
@@ -103,7 +81,7 @@ Queue* queue_insert_all_arr(Queue *qe, size_t index, void *value, size_t len, in
         index = 0;
     }
 
-    _QueueNode_ *tmp = get_queue_node(qe, index);
+    _QueueNode_ *tmp = _get_queue_node_(qe, index);
     for (size_t i = 0; i < len; i++)
     {
         void *tmpvalue = value+i*qe->type;
@@ -112,9 +90,9 @@ Queue* queue_insert_all_arr(Queue *qe, size_t index, void *value, size_t len, in
             tmpvalue = create_replica(tmpvalue, qe->type);
         }
         
-        tmp = _queue_insert_with_lastnode_(qe, 
+        tmp = _queue_update_with_lastnode_(qe, 
                 tmp, 
-                tmpvalue);
+                tmpvalue, 1);
     }
     
     return qe;
@@ -130,7 +108,7 @@ Queue* queue_insert_all(Queue *q1, Queue *q2, size_t index)
         return queue_concat(q2, q1);
     }
 
-    _QueueNode_ *tmp = get_queue_node(q1, index);
+    _QueueNode_ *tmp = _get_queue_node_(q1, index);
     _QueueNode_ *tmpnext = tmp->next;
     if (q2->first)
     {
@@ -481,7 +459,7 @@ void queue_destorya(Queue *qe)
     free(qe);
 }
 
-_QueueNode_ *get_queue_node(Queue *qe, size_t index)
+_QueueNode_ *_get_queue_node_(Queue *qe, size_t index)
 {
     if (!qe->first)
     {
@@ -506,4 +484,155 @@ _QueueNode_ *get_queue_node(Queue *qe, size_t index)
     }while (tmp = tmp->next);
     
     return NULL;
+}
+
+_QueueNode_* _queue_update_with_lastnode_(Queue *qe, _QueueNode_ *lastnode, void *value, int flags)
+{
+    int f = flags & UPDATE_NODE;
+    _QueueNode_ *node = NULL;
+    if (f == INSERT_NODE)
+    {
+        node = malloc(_QUEUE_NODE_TYPE_SIZE_);
+        node->next = NULL;
+        if (lastnode)
+        {
+            _QueueNode_ *tmpnext = lastnode->next;
+            lastnode->next = node;
+            node->next = tmpnext;
+        }else
+        {
+            node->next = qe->first;
+            qe->first = node;
+        }
+        qe->size++;
+    }else if (f == UPDATE_NODE)
+    {
+        if (lastnode){
+            node = lastnode->next;
+        }else
+        {
+            node = qe->first;
+        }
+    }else
+    {
+        node = lastnode;
+        _QueueNode_ *tmp = NULL;
+        if (lastnode)
+        {
+            tmp = lastnode->next;
+        }else
+        {
+            tmp = qe->first;
+        }
+        
+        if (tmp)
+        {
+            if (flags & DELETE_WITH_VALUE)
+            {
+                free(tmp->value);
+            }
+            if (lastnode)
+            {
+                lastnode->next = tmp->next;
+            }else
+            {
+                qe->first = tmp->next;
+            }
+            free(tmp);
+        }else
+        {
+            if (lastnode)
+            {
+                qe->last = lastnode;
+            }else
+            {
+                qe->first = NULL;
+                qe->last = NULL;
+            }
+        }
+        qe->size--;
+    }
+    
+    if (f & INSERT_NODE)
+    {
+        if (flags & CREATE_NEW_VALUE)
+        {
+            node->value = create_replica(value, qe->type);
+        }else
+        {
+            node->value = value;
+        }
+    }
+    return node;
+}
+
+Queue *queue_update_arr_div(Queue *qe, size_t start, size_t end, void *value, size_t len, int flags)
+{
+    if (start >= qe->size)
+    {
+        if (flags & INSERT_NODE)
+        {
+            if (flags & CREATE_NEW_VALUE)
+            {
+                return queue_concat_arrn(qe, value, len);
+            }else
+            {
+                return queue_concat_arr(qe, value, len);
+            }
+        }
+        return qe;
+    }else if (start > end && !end || (flags & INSERT_NODE) && !len)
+    {
+        return qe;
+    }
+
+    end = end > qe->size ? qe->size : end;
+
+    _QueueNode_ *tmp = _get_queue_node_(qe, start);
+    size_t step = 1;
+    if (end)
+    {
+        step = end - start;
+    }
+    
+    size_t index = 0;
+
+    if (flags & UPDATE_NODE == UPDATE_NODE)
+    {
+        if (step > len)
+        {
+            index = len;
+            flags = flags - INSERT_NODE;
+        }else
+        {
+            index = step;
+            flags = flags - DELETE_NODE;
+        }
+        
+        for (size_t i = 0; i < index; i++)
+        {
+            tmp = _queue_update_with_lastnode_(qe, 
+                    tmp, value+i*qe->type, flags);
+        }
+        
+    }
+
+    if (flags & DELETE_NODE)
+    {
+        for (; index < step; index++)
+        {
+            tmp = _queue_update_with_lastnode_(qe, 
+                    tmp, value+index*qe->type, flags);
+        }
+        
+    }else if (flags & INSERT_NODE)
+    {
+        for (; index < len; index++)
+        {
+            tmp = _queue_update_with_lastnode_(qe, 
+                    tmp, value+index*qe->type, flags);
+        }
+    }
+    
+    return qe;
 }
