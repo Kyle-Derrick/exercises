@@ -19,6 +19,9 @@ struct Queue
 };
 typedef struct Queue Queue;
 
+extern Queue *string_to_queue(char *str);
+extern Queue *string_to_queue_l(char *str, size_t len);
+
 //创建新队列
 extern Queue* new_queue(size_t type);
 //添加元素到尾部

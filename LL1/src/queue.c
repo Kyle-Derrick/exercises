@@ -9,6 +9,8 @@ const size_t _QUEUE_NODE_TYPE_SIZE_ = sizeof(_QueueNode_);
 _QueueNode_ *_clone_queue_node_(void *value, size_t size, int flags);
 _QueueNode_ *_get_queue_node_(Queue *qe, size_t index);
 _QueueNode_* _queue_update_with_lastnode_(Queue *qe, _QueueNode_ *lastnode, void *value, int flags);
+Queue *string_to_queue(char *str);
+Queue *string_to_queue_l(char *str, size_t len);
 Queue* new_queue(size_t type);
 Queue* queue_add(Queue *qe, void *value, int flags);
 Queue *queue_clone_all(Queue *qe, int flags);
@@ -35,6 +37,18 @@ void* queue_to_array(Queue *qe, size_t start, size_t end, int flags);
 Queue *queue_update_arr_diy(Queue *qe, size_t start, size_t end, void *value, size_t len, int flags);
 Queue *queue_update_diy(Queue *q1, Queue *q2, size_t start, size_t end, int flags);
 Queue* queue_update(Queue *qe, size_t index, void *value, int flags);
+
+Queue *string_to_queue(char *str)
+{
+    return string_to_queue_l(str, strlen(str));
+}
+
+Queue *string_to_queue_l(char *str, size_t len)
+{
+    Queue *q = new_queue(sizeof(char));
+    queue_concat_arr(q, str, len, CREATE_NEW_VALUE);
+    return q;
+}
 
 Queue* new_queue(size_t type)
 {
@@ -575,6 +589,7 @@ _QueueNode_ *_clone_queue_node_(void *value, size_t size, int flags)
     _QueueNode_ *tmp = malloc(_QUEUE_NODE_TYPE_SIZE_);
     if (flags & CREATE_NEW_VALUE)
     {
+        tmp->value = malloc(size);
         memcpy(tmp->value, value, size);
     }else
     {

@@ -29,66 +29,16 @@ char* test3()
 
 int main(int argc, char *argv[])
 {
-    Queue *queue = new_queue(sizeof(Produc));
+    char *ss = "hello";
+    Queue *queue = string_to_queue(ss);
+    printf("%d\n", queue->size);
+    printf("%d\n", queue->type);
+    printf("%d\n", queue->first);
+    printf("%d\n", queue->last);
+    char *s = queue_to_array_all(queue, CREATE_NEW_VALUE);
 
-    printf("%d\n", test());
-    printf("%s\n", test());
-    printf("%d\n", sizeof(size_t));
-    printf("%d\n", sizeof(_QueueNode_*));
-    printf("%d\n", queue_size(queue));
-    printf("%d\n", queue_size(queue));
-
-    Produc p1;
-    p1.left = "E";
-    p1.symbol = "->";
-    p1.right = "ET";
-
-    queue_add(queue, &p1, 0);
-
-    printf("%d\n", queue_size(queue));
-    printf("%d\n", queue_size(queue));
-
-    {
-        {
-            Produc p1;
-            p1.left = "T";
-            p1.symbol = "->";
-            p1.right = "TF";
-
-            queue_add(queue, &p1, 0);
-        }
-    }
-
-    printf("%d\n", queue_size(queue));
-    printf("%d\n", queue_size(queue));
-    printf("----------\n");
-
-    Produc *t = queue_shift(queue);
-    printf("%d\n", t);
-    printf("%s\t%s\t%s\n", t->left, t->symbol, t->right);
-    printf("%d\n", queue_size(queue));
-    t = queue_shift(queue);
-    printf("%s\t%s\t%s\n", t->left, t->symbol, t->right);
-    printf("%d\n", queue_size(queue));
-
+    printf("%d\n", s);
+    printf("%s\n", s);
+    free(s);
     queue_destory(queue, DELETE_WITH_VALUE);
-
-    char (*f)() = test;
-    printf("%d\n", f);
-    int (*f2)() = test2;
-    printf("%d\n", f2);
-    char (*f3)() = test3;
-    printf("%d\n", f3);
-    printf("%d\n", sizeof(*f));
-    printf("*:%d\n", f2());
-
-    printf("----------\n");
-    int (*f4)() = malloc(16);
-    printf("----------\n");
-    memcpy(f4, f2, 16);
-    printf("----------\n");
-
-    // char (*f4)() = tt;
-    printf("**:%d\n", f4());
-    free(f4);
 }
