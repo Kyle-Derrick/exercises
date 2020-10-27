@@ -15,6 +15,12 @@ typedef struct{
     Word *right;
 } Produc;
 
+typedef struct{
+    Queue *cols;
+    Queue *rows;
+    Produc ***table;
+} LLTable;
+
 const char *ARROW = "➜";
 const char *EPSILON = "ε";
 
@@ -23,13 +29,18 @@ FILE *get_file(int argc, char *argv[]);
 Word *queue_to_word(Queue *qe);
 Word *get_infer(FILE *fp);
 size_t scan_row(FILE *fp, size_t col);
-
+Word *word_clone(Word *word);
+LLTable *get_lltable(FILE *fp, Word *infer);
+void destory_word(Word *word);
+void *destory_word_queue(Queue* qe,_QueueNode_ *last,_QueueNode_ *now,_QueueNode_ **next,size_t index,void *arg,void *result);
+void destory_lltable(LLTable *lltable);
 
 int main(int argc, char *argv[])
 {
     FILE *fp = get_file(argc, argv);
     Word *infer = get_infer(fp);
 
+    LLTable *lltable = get_lltable(fp, infer);
     
     // queue_destory(queue, DELETE_WITH_VALUE);
 
@@ -37,6 +48,7 @@ int main(int argc, char *argv[])
     fclose(fp);
     free(infer->str);
     free(infer);
+    destory_lltable(lltable);
 }
 
 FILE *get_file(int argc, char *argv[])
@@ -102,19 +114,19 @@ size_t scan_row(FILE *fp, size_t col)
         if (ch == '\n')
         {
             row++;
-            if (coltmp != col - 1)
+            if (coltmp != col)
             {
                 perror("the analysis table file's struct is wrrong!");
                 exit(1);
             }
             
-            coltmp = 1;
+            coltmp = 0;
         }else if (ch == ',')
         {
             coltmp++;
         }
     }
-    if (coltmp == col - 1)
+    if (coltmp == col)
     {
         row++;
     }
@@ -123,7 +135,20 @@ size_t scan_row(FILE *fp, size_t col)
     return row;
 }
 
-void *table_head(FILE *fp)
+Word *word_clone(Word *word)
+{
+    Word *w = NULL;
+    if (word)
+    {
+        w = malloc(sizeof(Word));
+        w->len = word->len;
+        w->str = malloc(w->len+1);
+        memcpy(w->str, word->str, w->len+1);
+    }
+    return w;
+}
+
+LLTable *get_lltable(FILE *fp, Word *infer)
 {
     char ch;
     //获取表头
@@ -155,11 +180,17 @@ void *table_head(FILE *fp)
         }
         queue_add(tmp, &ch, CREATE_NEW_VALUE);
 
-        printf("%d\t%c\t", ch, ch);
+        printf("%d\t%c\t\n", ch, ch);
     }
 
     size_t row = scan_row(fp, colHead->size);
-    Produc table[row][colHead->size];
+    // Produc *table[row][colHead->size];
+    Produc ***table = malloc(sizeof(Produc**)*row);
+    for (size_t i = 0; i < colHead->size; i++)
+    {
+        *(table+i) = malloc(sizeof(Produc*)*colHead->size);
+    }
+    
     Queue *rowHead = new_queue(sizeof(Word));
     for (size_t i = 0; i < row; i++)
     {
@@ -167,23 +198,39 @@ void *table_head(FILE *fp)
         Queue *rowHeadStr = new_queue(sizeof(char));
         while ((ch = fgetc(fp)) != ',')
         {
-            queue_add(rowHeadStr, ch, CREATE_NEW_VALUE);
+            queue_add(rowHeadStr, &ch, CREATE_NEW_VALUE);
         }
         queue_add(rowHead, queue_to_word(rowHeadStr), NONE_FLAGS);
 
-        while ((ch = fgetc(fp)) != EOF)
+        Queue *tmp = NULL;
+        int match = 0;
+        Produc *produc = NULL;
+        int col = 0;
+        while (1)
         {
-            if (ch == ',' || ch == '\n')
+            ch = fgetc(fp);
+            if (ch == ',' || ch == '\n' || ch == EOF)
             {
-                Word *word;
-                if (word = queue_to_word(tmp))
+                if (tmp)
                 {
-                    queue_destory(tmp, DELETE_WITH_VALUE);
-                    queue_add(colHead, word, NONE_FLAGS);
-                    tmp = NULL;
+                    Word *word;
+                    if (word = queue_to_word(tmp))
+                    {
+                        queue_destory(tmp, DELETE_WITH_VALUE);
+                        if (!produc)
+                        {
+                            produc = malloc(sizeof(Produc));
+                            produc->left = word_clone(rowHead->last->value);
+                        }
+                        produc->right = word;
+                        table[i][col] = produc;
+                        produc = NULL;
+                        tmp = NULL;
+                    }
                 }
+                col++;
                 
-                if (ch == '\n')
+                if (ch == '\n' || ch == EOF)
                 {
                     break;
                 }else
@@ -191,14 +238,84 @@ void *table_head(FILE *fp)
                     continue;
                 }
                 
+            }else if (ch == ' ')
+            {
+                continue;
             }else if (!tmp)
             {
                 tmp = new_queue(sizeof(char));
             }
+            if (infer->str[match] == ch)
+            {
+                if (match == infer->len)
+                {
+                    queue_update_diy(tmp, NULL, tmp->size-3, tmp->size, DELETE_NODE|DELETE_WITH_VALUE);
+                    Word *word;
+                    if (tmp->size > 0)
+                    {
+                        word = queue_to_word(tmp);
+                    }else
+                    {
+                        word = word_clone(rowHead->last->value);
+                    }
+                    queue_destory(tmp, DELETE_WITH_VALUE);
+                    produc = malloc(sizeof(Produc));
+                    produc->left = word;
+                    match = 0;
+                    continue;
+                }else
+                {
+                    match++;
+                }
+            }
+            
             queue_add(tmp, &ch, CREATE_NEW_VALUE);
 
-            printf("%d\t%c\t", ch, ch);
+            printf("%d, %d\t%c\t\n", i, ch, ch);
         }
     }
     
+    LLTable *lltable = malloc(sizeof(LLTable));
+    lltable->cols = colHead;
+    lltable->rows = rowHead;
+    lltable->table = (Produc***)table;
+    return lltable;
+}
+
+void destory_word(Word *word)
+{
+    if (word)
+    {
+    printf("--------\n");
+        free(word->str);
+        free(word);
+    }
+    
+}
+
+void *destory_word_queue(Queue* qe,_QueueNode_ *last,_QueueNode_ *now,_QueueNode_ **next,size_t index,void *arg,void *result)
+{
+    destory_word((Word*)now);
+    qe->first = *next;
+}
+
+void destory_lltable(LLTable *lltable)
+{
+    for (size_t i = 0; i < lltable->rows->size; i++)
+    {
+        for (size_t j = 0; j < lltable->cols->size; j++)
+        {
+            Produc *p = lltable->table[i][j];
+            if (p)
+            {
+                destory_word(p->left);
+                destory_word(p->right);
+                free(p);
+            }
+    
+        }
+    }
+
+    queue_each(lltable->cols, NULL, destory_word_queue);
+    queue_each(lltable->rows, NULL, destory_word_queue);
 }
