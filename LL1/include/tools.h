@@ -1,6 +1,7 @@
 #ifndef _TOOLS_TOOLS_H_
 #define _TOOLS_TOOLS_H_
 
+#define NONE_FLAGS 0
 #define INSERT_NODE 1
 #define UPDATE_NODE 3
 #define DELETE_NODE 2

@@ -131,7 +131,7 @@ Queue* queue_concat(Queue *q1, Queue *q2, int flags)
     if (flags & CLONE_NEW_QUEUE)
     {
         q2->first = NULL;
-        queue_destory(q2, NULL);
+        queue_destory(q2, NONE_FLAGS);
     }
     return q1;
 }
@@ -278,7 +278,6 @@ void* queue_to_array(Queue *qe, size_t start, size_t end, int flags)
         return NULL;
     }
 
-    size_t i = 0;
     size_t step = end - start;
     if (!end)
     {
@@ -295,6 +294,7 @@ void* queue_to_array(Queue *qe, size_t start, size_t end, int flags)
         type = sizeof(void*);
     }
     
+    size_t i = 0;
     void *arr = malloc(step * type);
     do
     {
@@ -308,9 +308,8 @@ void* queue_to_array(Queue *qe, size_t start, size_t end, int flags)
                 memcpy(arr+i++, &(tmp->value), type);
             }
         }
-        
         i++;
-    } while (tmp->next && i < end);
+    } while ((tmp = tmp->next) && i < step);
     return arr;
 }
 
@@ -576,7 +575,7 @@ Queue *queue_update_diy(Queue *q1, Queue *q2, size_t start, size_t end, int flag
             if (flags & CLONE_NEW_QUEUE)
             {
                 q2->first = NULL;
-                queue_destory(q2, NULL);
+                queue_destory(q2, NONE_FLAGS);
             }
         }
     }
