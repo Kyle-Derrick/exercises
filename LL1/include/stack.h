@@ -35,9 +35,9 @@ extern void stack_destory(Stack *st);
 //destory the stack,stack node and value, include the value
 extern void stack_destorya(Stack *st);
 //自顶向下遍历栈，传入函数参数为(栈，上一个节点，当前遍历节点，下一个节点(二重指针)，当前索引，return返回的指针)
-extern void *stack_each(Stack *st, void *fun(Stack*,
+extern void *stack_each(Stack *st, void *arg, void *fun(Stack*,
         _StackNode_*,_StackNode_*,
-        _StackNode_**,size_t,void*));
+        _StackNode_**,size_t,void*,void*));
 //根据栈生成一个数组结构(自顶向下)
 extern void *stack_to_array(Stack *st, int flags);
 //克隆栈
