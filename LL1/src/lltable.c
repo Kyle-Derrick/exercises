@@ -8,7 +8,7 @@
 
 Word *get_infer(FILE *fp);
 size_t scan_row(FILE *fp, size_t col);
-LLTable *get_lltable(FILE *fp, Word *infer);
+LLTable *get_lltable(FILE *fp);
 void destory_lltable(LLTable *lltable);
 
 Word *get_infer(FILE *fp)
@@ -64,8 +64,10 @@ size_t scan_row(FILE *fp, size_t col)
     return row;
 }
 
-LLTable *get_lltable(FILE *fp, Word *infer)
+LLTable *get_lltable(FILE *fp)
 {
+    Word *infer = get_infer(fp);
+
     char ch;
     //获取表头
     Queue *colHead = new_queue(sizeof(Word));
@@ -95,8 +97,6 @@ LLTable *get_lltable(FILE *fp, Word *infer)
             tmp = new_queue(sizeof(char));
         }
         queue_add(tmp, &ch, CREATE_NEW_VALUE);
-
-        printf("%d\t%c\t\n", ch, ch);
     }
 
     size_t row = scan_row(fp, colHead->size);
@@ -138,6 +138,12 @@ LLTable *get_lltable(FILE *fp, Word *infer)
                             produc = malloc(sizeof(Produc));
                             produc->left = word_clone(rowHead->last->value);
                         }
+                        if (!strcmp(word->str, EPSILON))
+                        {
+                            destory_word(word);
+                            word = NULL;
+                        }
+                        
                         produc->right = word;
                         table[i][col] = produc;
                         produc = NULL;
@@ -186,8 +192,6 @@ LLTable *get_lltable(FILE *fp, Word *infer)
             }
             
             queue_add(tmp, &ch, CREATE_NEW_VALUE);
-
-            printf("%d, %d\t%c\t\n", i, ch, ch);
         }
     }
     
@@ -195,6 +199,7 @@ LLTable *get_lltable(FILE *fp, Word *infer)
     lltable->cols = colHead;
     lltable->rows = rowHead;
     lltable->table = (Produc***)table;
+    lltable->infer = infer;
     return lltable;
 }
 
@@ -215,6 +220,7 @@ void destory_lltable(LLTable *lltable)
         }
     }
 
+    destory_word(lltable->infer);
     queue_each(lltable->cols, NULL, destory_word_queue);
     queue_each(lltable->rows, NULL, destory_word_queue);
 }

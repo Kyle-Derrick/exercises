@@ -11,6 +11,10 @@ typedef struct{
     Word *right;
 } Produc;
 
+// const char *ARROW = "➜";
+extern const char *EPSILON;
+
+extern size_t queue_word_indexOf(Queue *qe, Word *word);
 extern Word *queue_to_word(Queue *qe);
 extern Word *word_clone(Word *word);
 extern void destory_word(Word *word);

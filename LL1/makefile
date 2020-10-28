@@ -1,12 +1,13 @@
-CPPFLAGS=-Iinclude
+CFLAGS=-Iinclude
+LIBS=-Llib -ltools
 src=$(wildcard src/*.c)
 obj=$(patsubst src/%.c, obj/%.o, $(src))
 app=bin/app
 
 $(app):$(obj)
-	$(CC) $^ -o $@
+	$(CC) $^ $(LIBS) -o $@
 obj/%.o:src/%.c
-	$(CC) $(CPPFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) $(LIBS) -c $< -o $@
 
 clean:
 	rm $(obj) $(app) -f

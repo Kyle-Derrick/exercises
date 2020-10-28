@@ -6,26 +6,19 @@
 #include "llbase.h"
 #include "lltable.h"
 
-
-const char *ARROW = "➜";
-const char *EPSILON = "ε";
-
 //open 
 FILE *get_file(int argc, char *argv[]);
 
 int main(int argc, char *argv[])
 {
     FILE *fp = get_file(argc, argv);
-    Word *infer = get_infer(fp);
 
-    LLTable *lltable = get_lltable(fp, infer);
+    LLTable *lltable = get_lltable(fp);
     
     // queue_destory(queue, DELETE_WITH_VALUE);
 
     //close all resource
     fclose(fp);
-    free(infer->str);
-    free(infer);
     destory_lltable(lltable);
 }
 
