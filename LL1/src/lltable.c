@@ -137,7 +137,6 @@ LLTable *get_lltable(FILE *fp)
                     if (word = queue_to_word(tmp))
                     {
                         queue_destory(tmp, DELETE_WITH_VALUE);
-                        printf("-------\n");
                         if (!produc)
                         {
                             produc = malloc(sizeof(Produc));
@@ -189,7 +188,6 @@ LLTable *get_lltable(FILE *fp)
                     queue_destory(tmp, DELETE_WITH_VALUE);
                     produc = malloc(sizeof(Produc));
                     produc->left = word;
-                    printf("l:%s\t%d\n", word->str, word->len);
                     tmp = new_queue(sizeof(char));
                     match = 0;
                     continue;
@@ -226,8 +224,10 @@ void destory_lltable(LLTable *lltable)
             }
     
         }
+        free(lltable->table[i]);
     }
 
+    free(lltable->table);
     destory_word(lltable->infer);
     queue_each(lltable->cols, NULL, destory_word_queue);
     queue_each(lltable->rows, NULL, destory_word_queue);

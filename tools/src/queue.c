@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include "tools.h"
 #include "queue.h"
@@ -308,9 +309,9 @@ void* queue_to_array(Queue *qe, size_t start, size_t end, int flags)
             {
                 memcpy(t, &(tmp->value), type);
             }
+            i++;
         }
-        i++;
-    } while ((tmp = tmp->next) && i < step);
+    } while ((tmp = tmp->next) && i <= step);
     return arr;
 }
 

@@ -38,14 +38,13 @@ Word *queue_to_word(Queue *qe)
     }
     
     Word *w = malloc(sizeof(Word));
-    printf("***-: %d--%d\n", w->len, qe->size);
     size_t len = qe->size;
     
-    queue_add(qe, "\0", CREATE_NEW_VALUE);
-    printf("***-: %d--%d\n", w->len, qe->size);
+    qe->size++;
     w->len = len;
     w->str = queue_to_array_all(qe, CREATE_NEW_VALUE);
-    printf("***: %s\t%d\n", w->str, w->len);
+    qe->size--;
+    w->str[w->len] = '\0';
     return w;
 }
 

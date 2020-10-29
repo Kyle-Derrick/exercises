@@ -10,27 +10,65 @@
 const char *$ = "$";
 const char *START = "E";
 
-void analysis(char* str, LLTable *table);
+void analysis(LLTable *table);
+void analysis_work(char* str, LLTable *table, Word **colstmp);
 Stack *initStack();
 void lltable_produc_handle(LLTable *lltable);
 Queue *sentence_to_queue(char* str, Word **words, size_t wordslen);
 void print_analysis_status(LLTable *table, Stack *stack, Produc *produc, char *str, size_t index, size_t len);
+Word **words_sort(Word **words, size_t wordslen);
 
-void analysis(char* str, LLTable *table)
+void analysis(LLTable *table)
 {
-    Stack *stack = initStack();
     Word **colstmp = queue_to_array_all(table->cols, NONE_FLAGS);
-    Queue *sentence = sentence_to_queue(str, colstmp, table->cols->size);
-    free(colstmp);
-
+    colstmp = words_sort(colstmp, table->cols->size);
     lltable_produc_handle(table);
-printf("------\n");
+    
+    char sentence[4096];
+    while (1)
+    {
+        printf("input:\n");
+        fgets(sentence, 4096, stdin);
 
+        size_t len = strlen(sentence);
+        if (len < 1)
+        {
+            continue;
+        }
+        
+        sentence[len-1] = '\0';
+        if (!strcmp(sentence, "exit"))
+        {
+            printf("Bye~\n");
+            break;
+        }
+        
+        analysis_work(sentence, table, colstmp);
+    }
+
+    free(colstmp);
+}
+
+void analysis_work(char* str, LLTable *table, Word **colstmp)
+{
+    printf("loading...\n");
+    Queue *sentence = sentence_to_queue(str, colstmp, table->cols->size);
+    //add $ symbol to sentence
+    Word *$word = malloc(sizeof(Word));
+    $word->len = strlen($);
+    $word->str = malloc($word->len + 1);
+    strcpy($word->str, $);
+    queue_add(sentence, $word, NONE_FLAGS);
+
+    //init analysis stack
+    Stack *stack = initStack();
     Produc *produc;
+    printf("Analysis starting...\n");
     for (size_t i = 0; stack->size > 0 && sentence->size > 1; )
     {
         Word *stackTop = stack->top->value;
         Word *queueFirst = sentence->first->value;
+    printf("now: %s, %s\n", stackTop->str, queueFirst->str);
         if (!strcmp(stackTop->str, queueFirst->str))
         {
             destory_word(stack_pop(stack));
@@ -40,7 +78,9 @@ printf("------\n");
         {
             size_t row = queue_word_indexOf(table->rows, stackTop);
             size_t col = queue_word_indexOf(table->cols, queueFirst);
+
             produc = table->table[row][col];
+    printf("produc: %d, %d: %d\n", row, col, produc);
             if (!produc)
             {
                 perror("Grammer is wrong: ");
@@ -53,16 +93,16 @@ printf("------\n");
             }else
             {
                 destory_word(stack_pop(stack));
-                stackTop = stack->top->value;
-                for (size_t j = produc->size-1; j >= 0; j++)
+                for (size_t j = produc->size; j > 0; j--)
                 {
-                    stack_push(stack, word_clone(produc->right+j));
+                    stack_push(stack, word_clone(produc->right+j-1));
                 }
             }
         }
+        printf("----\n");
         print_analysis_status(table, stack, produc, str, i, sentence->size);
     }
-    
+
     end:
     stack_destorya(stack);
     queue_destory(sentence, DELETE_WITH_VALUE);
@@ -77,9 +117,12 @@ void lltable_produc_handle(LLTable *lltable)
     Word **words = queue_to_array_all(
         queue_concat(rowqetmp, colqetmp, NONE_FLAGS), NONE_FLAGS
         );
+    words = words_sort(words, rowlen+collen);
     colqetmp->first = NULL;
     queue_destory(colqetmp, NONE_FLAGS);
     Produc ***table = lltable->table;
+    printf("row: %d, col: %d\n", rowlen, collen);
+    printf("table:\nrow,col\tcontent\t\t(right num)\n");
     for (size_t i = 0; i < rowlen; i++)
     {
         for (size_t j = 0; j < collen; j++)
@@ -87,12 +130,27 @@ void lltable_produc_handle(LLTable *lltable)
             Produc *p = table[i][j];
             if (p)
             {
-                printf("%s,%s,%s\n", p->left, lltable->infer->str, p->right);
-                Queue *tmp = sentence_to_queue(p->right->str, words, rowlen+collen);
-                destory_word(p->right);
-                p->right = queue_to_array_all(tmp, CREATE_NEW_VALUE);
-                p->size = tmp->size;
-                queue_destory(tmp, DELETE_WITH_VALUE);
+                printf("%d,%d\t%s%s%s",
+                    i+1,j+1,
+                    p->left->str, 
+                    lltable->infer->str, 
+                    p->right?p->right->str : EPSILON
+                    );
+                if (p->right)
+                {
+                    Queue *tmp = sentence_to_queue(p->right->str, words, rowlen+collen);
+                    destory_word(p->right);
+                    p->right = queue_to_array_all(tmp, CREATE_NEW_VALUE);
+                    p->size = tmp->size;
+                    queue_destory(tmp, DELETE_WITH_VALUE);
+
+                    printf("\t\t%d", p->size);
+                }else
+                {
+                    p->size = 0;
+                }
+                
+                printf("\n");
             }
         }
         
@@ -105,20 +163,6 @@ void lltable_produc_handle(LLTable *lltable)
 Queue *sentence_to_queue(char* str, Word **words, size_t wordslen)
 {
     size_t slen = strlen(str);
-    for (size_t i = 0; i < (wordslen-1); i++)
-    {
-        size_t len = (*(words+i))->len;
-        for (size_t j = i + 1; j < wordslen; j++)
-        {
-            if ((**(words+j)).len > len)
-            {
-                Word *tmp = *(words+i);
-                *(words+i) = *(words+j);
-                *(words+j) = tmp;
-            }
-        }
-    }
-printf("+------\n");
     
     size_t index = 0;
     Queue *strqe = new_queue(sizeof(Word));
@@ -138,19 +182,31 @@ printf("+------\n");
             {
                 queue_add(strqe, word_clone(tmp), NONE_FLAGS);
                 index += tmp->len;
+                i = wordslen;
             }
-// printf("+-----%d-%s\t%s\n", tmp->len, tmp->str, str);
         }
-// printf("+-----%d-%d\t%s\n", index, slen, str);
     }
-
-printf("+------\n");
-    Word *$word = malloc(sizeof(Word));
-    $word->len = strlen($);
-    $word->str = malloc($word->len + 1);
-    strcpy($word->str, $);
     
-    return queue_add(strqe, $word, NONE_FLAGS);
+    return strqe;
+}
+
+Word **words_sort(Word **words, size_t wordslen)
+{
+    for (size_t i = 0; i < (wordslen-1); i++)
+    {
+        size_t len = (*(words+i))->len;
+        for (size_t j = i + 1; j < wordslen; j++)
+        {
+            if ((**(words+j)).len > len)
+            {
+                Word *tmp = *(words+i);
+                *(words+i) = *(words+j);
+                *(words+j) = tmp;
+            }
+        }
+    }
+    
+    return words;
 }
 
 Stack *initStack()
@@ -176,9 +232,9 @@ void print_analysis_status(LLTable *table, Stack *stack, Produc *produc, char *s
     Word **words = malloc(sizeof(Word*)*stack->size);
     stack_each(stack, words, stack_words_each);
     printf("$");
-    for (size_t i = stack->size-1; i >= 0; i++)
+    for (size_t i = stack->size; i > 0; i++)
     {
-        printf(" %s", (*(words+i))->str);
+        printf(" %s", (*(words+i-1))->str);
     }
     printf("\t|\t%s$", str + index);
     printf("\t|\t");

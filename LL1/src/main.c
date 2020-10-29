@@ -15,29 +15,8 @@ int main(int argc, char *argv[])
     FILE *fp = get_file(argc, argv);
 
     LLTable *lltable = get_lltable(fp);
-    
-    char sentence[4096];
-    while (1)
-    {
-        printf("input:\n");
-        fgets(sentence, 4096, stdin);
 
-        size_t len = strlen(sentence);
-        if (len < 1)
-        {
-            continue;
-        }
-        
-        sentence[len-1] = '\0';
-        if (!strcmp(sentence, "exit"))
-        {
-            break;
-        }
-        
-        analysis(sentence, lltable);
-    }
-    
-    // queue_destory(queue, DELETE_WITH_VALUE);
+    analysis(lltable);
 
     //close all resource
     fclose(fp);
