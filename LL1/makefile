@@ -6,6 +6,10 @@ app=bin/app
 
 $(app):$(obj)
 	$(CC) $^ $(LIBS) -o $@
+
+debug:$(obj)
+	$(CC) $^ $(LIBS) -g -o bin/debug
+
 obj/%.o:src/%.c
 	$(CC) $(CFLAGS) $(LIBS) -c $< -o $@
 

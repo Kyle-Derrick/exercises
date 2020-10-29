@@ -67,6 +67,7 @@ size_t scan_row(FILE *fp, size_t col)
 LLTable *get_lltable(FILE *fp)
 {
     Word *infer = get_infer(fp);
+    printf("Debug: infer: %s, %d\n", infer->str, infer->len);
 
     char ch;
     //获取表头
@@ -92,6 +93,9 @@ LLTable *get_lltable(FILE *fp)
                 continue;
             }
             
+        }else if (ch == '\r'||ch==' ')
+        {
+            continue;
         }else if (!tmp)
         {
             tmp = new_queue(sizeof(char));
@@ -133,18 +137,19 @@ LLTable *get_lltable(FILE *fp)
                     if (word = queue_to_word(tmp))
                     {
                         queue_destory(tmp, DELETE_WITH_VALUE);
+                        printf("-------\n");
                         if (!produc)
                         {
                             produc = malloc(sizeof(Produc));
-                            produc->left = word_clone(rowHead->last->value);
+                            produc->left = word_clone(queue_get(rowHead, i));
                         }
                         if (!strcmp(word->str, EPSILON))
                         {
                             destory_word(word);
                             word = NULL;
                         }
-                        
                         produc->right = word;
+                
                         table[i][col] = produc;
                         produc = NULL;
                         tmp = NULL;
@@ -160,7 +165,7 @@ LLTable *get_lltable(FILE *fp)
                     continue;
                 }
                 
-            }else if (ch == ' ')
+            }else if (ch == ' '||ch == '\r')
             {
                 continue;
             }else if (!tmp)
@@ -169,26 +174,29 @@ LLTable *get_lltable(FILE *fp)
             }
             if (infer->str[match] == ch)
             {
+                match++;
                 if (match == infer->len)
                 {
-                    queue_update_diy(tmp, NULL, tmp->size-3, tmp->size, DELETE_NODE|DELETE_WITH_VALUE);
+                    queue_update_diy(tmp, NULL, tmp->size-infer->len+1, tmp->size, DELETE_NODE|DELETE_WITH_VALUE);
                     Word *word;
                     if (tmp->size > 0)
                     {
                         word = queue_to_word(tmp);
                     }else
                     {
-                        word = word_clone(rowHead->last->value);
+                        word = word_clone(queue_get(rowHead, i));
                     }
                     queue_destory(tmp, DELETE_WITH_VALUE);
                     produc = malloc(sizeof(Produc));
                     produc->left = word;
+                    printf("l:%s\t%d\n", word->str, word->len);
+                    tmp = new_queue(sizeof(char));
                     match = 0;
                     continue;
-                }else
-                {
-                    match++;
                 }
+            }else
+            {
+                match = 0;
             }
             
             queue_add(tmp, &ch, CREATE_NEW_VALUE);

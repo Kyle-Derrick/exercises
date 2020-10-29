@@ -7,6 +7,7 @@ typedef struct{
 } Word;
 
 typedef struct{
+    size_t size;
     Word *left;
     Word *right;
 } Produc;

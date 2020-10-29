@@ -37,11 +37,16 @@ Word *queue_to_word(Queue *qe)
         return NULL;
     }
     
+    Word *w = malloc(sizeof(Word));
+    printf("***-: %d--%d\n", w->len, qe->size);
+    size_t len = qe->size;
+    
     queue_add(qe, "\0", CREATE_NEW_VALUE);
-    Word *word = malloc(sizeof(Word));
-    word->str = queue_to_array_all(qe, CREATE_NEW_VALUE);
-    word->len = qe->size;
-    return word;
+    printf("***-: %d--%d\n", w->len, qe->size);
+    w->len = len;
+    w->str = queue_to_array_all(qe, CREATE_NEW_VALUE);
+    printf("***: %s\t%d\n", w->str, w->len);
+    return w;
 }
 
 Word *word_clone(Word *word)
