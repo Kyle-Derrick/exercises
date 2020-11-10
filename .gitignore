@@ -2,3 +2,7 @@
 cmake-build-debug
 bin
 obj
+.vs
+.vscode
+build
+Debug
