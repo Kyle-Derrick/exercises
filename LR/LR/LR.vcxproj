@@ -142,12 +142,16 @@
     <ClCompile Include="LR.cpp" />
     <ClCompile Include="src\AppContext.cpp" />
     <ClCompile Include="src\Base.cpp" />
+    <ClCompile Include="src\LRAnalyze.cpp" />
     <ClCompile Include="src\Produc.cpp" />
+    <ClCompile Include="src\TableUnit.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\AppContext.h" />
     <ClInclude Include="include\Base.h" />
+    <ClInclude Include="include\LRAnalyze.h" />
     <ClInclude Include="include\Produc.h" />
+    <ClInclude Include="include\TableUnit.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

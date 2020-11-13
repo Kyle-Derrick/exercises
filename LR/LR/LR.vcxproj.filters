@@ -27,6 +27,12 @@
     <ClCompile Include="src\Base.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="src\TableUnit.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\LRAnalyze.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Produc.h">
@@ -36,6 +42,12 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="include\Base.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\TableUnit.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\LRAnalyze.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

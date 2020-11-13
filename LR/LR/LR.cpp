@@ -6,15 +6,10 @@
 
 using namespace std;
 
-int main()
+int main(int argc, char *argv[])
 {
-	AppContext::init("D:\\LR.conf");
-	vector<string> list;
-	string str = "asa";
-	split(list, str, ",");
-	for (string s : list)
-	{
-		cout << s << "\t" << s.empty() << endl;
-	}
+	AppContext context = AppContext::init("D:\\LR.conf");
+	context.testPrint();
+
 
 }

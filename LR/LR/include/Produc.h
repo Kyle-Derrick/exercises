@@ -25,9 +25,10 @@ public:
 	string getArrow();
 	vector<string> getRight();
 	Produc(string str, string left, string arrow, vector<string> right);
-	~Produc();
 	//通过解析字符串生成产生式对象
 	static Produc& identify(vector<string> &symbols, string arrow, string str);
+	//通过符号表解析字符串为字符串列表
+	static vector<string> analyzestr(const vector<string>& symbols, vector<string>& strs, string str);
 };
 
 #endif
