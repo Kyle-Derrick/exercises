@@ -48,16 +48,23 @@ private:
 	//获取接下来的内容行
 	static size_t contentLineSize(ifstream& fs);
 public:
+	~AppContext();
 	/**
 	初始化
 	传入分析配置文件路径
 	*/
-	static AppContext& init(string f);
+	static AppContext init(string f);
 
+	//查询action表
 	TableUnit action_search(string symbol, size_t status);
+	//查询goto表
 	int goto_search(string symbol, size_t status);
-
-	void testPrint();
+	//获取产生式
+	Produc get_produc(size_t index);
+	//获取错误信息
+	string get_error(size_t index);
+	//通过符号表解析字符串为字符串列表
+	vector<string> analyzestr(vector<string>& strs, string str);
 };
 
 #endif // !_APPCONTEXT_H_

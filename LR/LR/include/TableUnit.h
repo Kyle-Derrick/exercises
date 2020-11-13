@@ -23,7 +23,7 @@ private:
 public:
 	TableUnit(UnitType type, size_t value);
 	//解析字符串为分析表action表格单元
-	static TableUnit& identify(string str);
+	static TableUnit identify(string str);
 	UnitType getType();
 	char getTypeStr();
 	size_t getValue();

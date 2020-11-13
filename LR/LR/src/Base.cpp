@@ -26,3 +26,31 @@ vector<string>& split(vector<string> &list, string& str, string delim)
 	list.push_back(str.substr(last));
 	return list;
 }
+
+vector<string> str_to_symbols(const vector<string>& symbols, vector<string>& strs, string str)
+{
+	size_t index = 0;
+	while (true)
+	{
+		size_t tmp = index;
+		for (string symbol : symbols)
+		{
+			size_t len = symbol.length();
+			if (!str.compare(index, len, symbol))
+			{
+				strs.push_back(str.substr(index, len));
+				index += len;
+				break;
+			}
+		}
+		if (tmp == index)
+		{
+			throw ("解析产生式时出现未知符号:" + str.substr(index));
+		}
+		else if (index >= str.length())
+		{
+			break;
+		}
+	}
+	return strs;
+}

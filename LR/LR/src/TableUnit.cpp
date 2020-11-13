@@ -6,7 +6,7 @@ TableUnit::TableUnit(UnitType type, size_t value)
     this->value = value;
 }
 
-TableUnit& TableUnit::identify(string str)
+TableUnit TableUnit::identify(string str)
 {
 	transform(str.begin(), str.end(), str.begin(), ::tolower);
 	UnitType type;
@@ -46,7 +46,7 @@ TableUnit& TableUnit::identify(string str)
 			exit(EXIT_FAILURE);
 		}
 	}
-	return *new TableUnit(type, value);
+	return TableUnit(type, value);
 }
 
 UnitType TableUnit::getType()

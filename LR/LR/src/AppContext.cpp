@@ -11,18 +11,22 @@ int AppContext::lineType(string line)
     else if (line == "[symbol-list]")
     {
         type = 1;
+        cout << "\n>> <解析符号列表>" << endl;
     }
     else if (line == "[productor-list]")
     {
         type = 2;
+        cout << "\n>> <解析产生式列表>" << endl;
     }
     else if (line == "[analysis-table]")
     {
         type = 3;
+        cout << "\n>> <解析分析表>" << endl;
     }
     else if (line == "[error-list]")
     {
         type = 4;
+        cout << "\n>> <解析错误信息列表>" << endl;
     }
     return type;
 }
@@ -139,10 +143,22 @@ size_t AppContext::contentLineSize(ifstream& fs)
     return size;
 }
 
-AppContext& AppContext::init(string f)
+AppContext::~AppContext()
 {
-    ifstream fs(f);
+    vector<string>().swap(this->symbols);
+    vector<string>().swap(this->actions);
+    vector<string>().swap(this->gotos);
+    vector<Produc>().swap(this->producs);
+    vector<vector<TableUnit>>().swap(this->atable);
+    vector<vector<int>>().swap(this->gtable);
+    vector<string>().swap(this->errors);
+}
 
+AppContext AppContext::init(string f)
+{
+    cout << ">> 开始解析文件..." << endl;
+
+    ifstream fs(f);
     if (!fs.is_open())
     {
         cout << "打开文件失败！" << endl;
@@ -150,13 +166,21 @@ AppContext& AppContext::init(string f)
     }
     string line;
     int status = -1;
+	//符号集
     vector<string> symbols;
+    //action表头
     vector<string> actions;
+    //goto表头
     vector<string> gotos;
+    //产生式列表
     vector<Produc> producs;
+    //action表
     vector<vector<TableUnit>> atable;
+    //goto表
     vector<vector<int>> gtable;
+    //错误信息列表
     vector<string> errors;
+    //推导符号
     string arrow;
     size_t tsize = 0;
     while (!fs.eof())
@@ -208,7 +232,7 @@ AppContext& AppContext::init(string f)
     }
 
     //创建实例并赋值
-    AppContext &context = *new AppContext();
+    AppContext context;
     context.symbols = symbols;
     context.actions = actions;
     context.gotos = gotos;
@@ -220,57 +244,34 @@ AppContext& AppContext::init(string f)
     return context;
 }
 
-void AppContext::testPrint()
+TableUnit AppContext::action_search(string symbol, size_t status)
 {
-    //Test
-    cout << "-------symbols-------" << endl;
-    for (string s : symbols)
+    vector<string>::iterator iter = find(actions.begin(), actions.end(), symbol);
+    return atable.at(status).at(iter - actions.begin());
+}
+
+int AppContext::goto_search(string symbol, size_t status)
+{
+    vector<string>::iterator iter = find(gotos.begin(), gotos.end(), symbol);
+    return gtable.at(status).at(iter - gotos.begin());
+}
+
+Produc AppContext::get_produc(size_t index)
+{
+    index = min(this->producs.size() - 1, index);
+    return this->producs.at(index);
+}
+
+string AppContext::get_error(size_t index)
+{
+    if ((this->errors.size() - 1) < index)
     {
-        cout << s << endl;
+        index = 0;
     }
-    cout << "-------actions-------" << endl;
-    for (string s : actions)
-    {
-        cout << s << endl;
-    }
-    cout << "-------gotos-------" << endl;
-    for (string s : gotos)
-    {
-        cout << s << endl;
-    }
-    cout << "-------producs-------" << endl;
-    for (Produc p : producs)
-    {
-        cout << "+++" << endl;
-        cout << p.getLeft() << endl;
-        cout << p.getArrow() << endl;
-        for (string s : p.getRight())
-        {
-            cout << s << endl;
-        }
-        cout << p.getStr() << endl;
-    }
-    cout << "-------atable-------" << endl;
-    for (vector<TableUnit> v : atable)
-    {
-        for (TableUnit u : v)
-        {
-            cout << u.getTypeStr() << u.getValue() << '\t';
-        }
-        cout << endl;
-    }
-    cout << "-------gtable-------" << endl;
-    for (vector<int> v : gtable)
-    {
-        for (int i : v)
-        {
-            cout << i << '\t';
-        }
-        cout << endl;
-    }
-    cout << "-------errors-------" << endl;
-    for (string s : errors)
-    {
-        cout << s << endl;
-    }
+    return this->errors.at(index);
+}
+
+vector<string> AppContext::analyzestr(vector<string>& strs, string str)
+{
+    return str_to_symbols(this->symbols, strs, str);
 }
