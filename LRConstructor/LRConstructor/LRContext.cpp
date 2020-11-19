@@ -3,17 +3,19 @@
 void LRContext::produc_analyze(
 	const string& line, const string& arrow, const string& delim, const vector<string>& terminators,
 	const vector<string>& non_terminators, vector<Produc>& producs,
-	map<Symbol, vector<Produc>>& produc_map)
+	map<string, vector<size_t>>& produc_map)
 {
 	if (non_terminators.empty() || terminators.empty())
 	{
 		cerr << "配置文件顺序格式错误！产生式需要在配置文件的最后。" << endl;
 		exit(EXIT_FAILURE);
 	}
-	vector<Produc> producs_tmp;
-	Symbol left = Produc::identify(terminators, non_terminators, producs_tmp, arrow, line, delim);
-	vector<Produc>& tmp = produc_map[left];
-	tmp.insert(tmp.end(), producs_tmp.begin(), producs_tmp.end());
+	size_t i = producs.size();
+	Symbol left = Produc::identify(terminators, non_terminators, producs, arrow, line, delim);
+	for (; i < producs.size(); i++)
+	{
+		produc_map[left.getStr()].push_back(i);
+	}
 }
 
 LRContext LRContext::init(string fpath)
@@ -28,11 +30,10 @@ LRContext LRContext::init(string fpath)
 	string arrow;
 	string start_symbol;
 	string delim;
-	//vector<string> symbols;
 	vector<string> terminators;
 	vector<string> non_terminators;
 	vector<Produc> producs;
-	map<Symbol, vector<Produc>> produc_map;
+	map<string, vector<size_t>> produc_map;
 	int status = -1;
 	while (!fin.eof())
 	{
@@ -78,12 +79,10 @@ LRContext LRContext::init(string fpath)
 				}
 				break;
 			case 1:
-				//symbols.insert(symbols.end(), tmp.begin(), tmp.end());
 				terminators.insert(terminators.end(), tmp.begin(), tmp.end());
 				kyle::sort_by_len(terminators);
 				break;
 			case 2:
-				//symbols.insert(symbols.end(), tmp.begin(), tmp.end());
 				non_terminators.insert(non_terminators.end(), tmp.begin(), tmp.end());
 				kyle::sort_by_len(non_terminators);
 				break;
@@ -102,6 +101,7 @@ LRContext LRContext::init(string fpath)
 	context.non_terminators = non_terminators;
 	context.producs = producs;
 	context.start_symbol = Symbol(start_symbol, SymbolType::NON_TERMINATOR);
+	context.produc_map = produc_map;
     return context;
 }
 
@@ -127,6 +127,16 @@ void LRContext::test()
 		for (Symbol s : p.getRight())
 		{
 			cout << s.getStr();
+		}
+		cout << endl;
+	}
+	cout << "> 产生式map: " << endl;
+	for (auto& p : produc_map)
+	{
+		cout << p.first << ": ";
+		for (size_t s : p.second)
+		{
+			cout <<s;
 		}
 		cout << endl;
 	}

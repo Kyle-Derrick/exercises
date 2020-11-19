@@ -1,4 +1,5 @@
 ﻿#include <iostream>
+#include <map>
 #include "include/LRContext.h"
 
 using namespace std;
@@ -10,6 +11,7 @@ int main()
     cout << "> 读取配置..." << endl;
     LRContext context = LRContext::init("LRConstructor.conf");
     context.test();
+
 }
 
 void constructor(LRContext context)
