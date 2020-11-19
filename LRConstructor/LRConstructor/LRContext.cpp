@@ -1,5 +1,21 @@
 #include "include\LRContext.h"
 
+void LRContext::produc_analyze(
+	const string& line, const string& arrow, const string& delim, const vector<string>& terminators,
+	const vector<string>& non_terminators, vector<Produc>& producs,
+	map<Symbol, vector<Produc>>& produc_map)
+{
+	if (non_terminators.empty() || terminators.empty())
+	{
+		cerr << "配置文件顺序格式错误！产生式需要在配置文件的最后。" << endl;
+		exit(EXIT_FAILURE);
+	}
+	vector<Produc> producs_tmp;
+	Symbol left = Produc::identify(terminators, non_terminators, producs_tmp, arrow, line, delim);
+	vector<Produc>& tmp = produc_map[left];
+	tmp.insert(tmp.end(), producs_tmp.begin(), producs_tmp.end());
+}
+
 LRContext LRContext::init(string fpath)
 {
     ifstream fin(fpath);
@@ -10,11 +26,13 @@ LRContext LRContext::init(string fpath)
 	}
 	string line;
 	string arrow;
+	string start_symbol;
 	string delim;
-	vector<Produc> producs;
 	//vector<string> symbols;
 	vector<string> terminators;
 	vector<string> non_terminators;
+	vector<Produc> producs;
+	map<Symbol, vector<Produc>> produc_map;
 	int status = -1;
 	while (!fin.eof())
 	{
@@ -24,7 +42,7 @@ LRContext LRContext::init(string fpath)
 		{
 			continue;
 		}
-		else if (line == "[arrow and delim]")
+		else if (line == "[base symbol]")
 		{
 			status = 0;
 		}
@@ -47,30 +65,30 @@ LRContext LRContext::init(string fpath)
 			switch (status)
 			{
 			case 0:
-				arrow = tmp.at(0);
-				if (tmp.size() > 1)
+				if (tmp.size() < 2)
 				{
-					delim = tmp.at(1);
+					cerr << "基本符号配置必须包含推导符和开始符号！" << endl;
+					exit(EXIT_FAILURE);
+				}
+				arrow = tmp.at(0);
+				start_symbol = tmp.at(1);
+				if (tmp.size() > 2)
+				{
+					delim = tmp.at(2);
 				}
 				break;
 			case 1:
 				//symbols.insert(symbols.end(), tmp.begin(), tmp.end());
 				terminators.insert(terminators.end(), tmp.begin(), tmp.end());
+				kyle::sort_by_len(terminators);
 				break;
 			case 2:
 				//symbols.insert(symbols.end(), tmp.begin(), tmp.end());
 				non_terminators.insert(non_terminators.end(), tmp.begin(), tmp.end());
+				kyle::sort_by_len(non_terminators);
 				break;
 			case 3:
-				if (non_terminators.empty() || terminators.empty())
-				{
-					cerr << "配置文件顺序格式错误！产生式需要在配置文件的最后。" << endl;
-					exit(EXIT_FAILURE);
-				}
-				//kyle::sort_by_len(symbols);
-				kyle::sort_by_len(terminators);
-				kyle::sort_by_len(non_terminators);
-				Produc::identify(terminators, non_terminators, producs, arrow, line, delim);
+				produc_analyze(line, arrow, delim, terminators, non_terminators, producs, produc_map);
 				break;
 			default:
 				break;
@@ -83,6 +101,7 @@ LRContext LRContext::init(string fpath)
 	context.terminators = terminators;
 	context.non_terminators = non_terminators;
 	context.producs = producs;
+	context.start_symbol = Symbol(start_symbol, SymbolType::NON_TERMINATOR);
     return context;
 }
 

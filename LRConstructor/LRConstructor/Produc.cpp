@@ -33,11 +33,17 @@ Produc::~Produc()
 	vector<Symbol>().swap(this->right);
 }
 
-vector<Produc> Produc::identify(const vector<string>& terminators,
+Symbol Produc::identify(const vector<string>& terminators,
 	const vector<string>& non_terminators, vector<Produc>& producs, const string& arrow, const string& str, const string& delim)
 {
 	size_t index = str.find(arrow);
 	Symbol left(str.substr(0, index), SymbolType::NON_TERMINATOR);
+	//判断产生式右部符号是否是非终结符列表中的的符号
+	if (find(non_terminators.begin(), non_terminators.end(), left.getStr()) == non_terminators.end())
+	{
+		cerr << "未知符号: " << left.getStr() << endl;
+		exit(EXIT_FAILURE);
+	}
 
 	index += arrow.length();
 	vector<string> tmp;
@@ -64,6 +70,6 @@ vector<Produc> Produc::identify(const vector<string>& terminators,
 		}
 		producs.push_back(Produc(str, left, arrow, right));
 	}
-	return producs;
+	return left;
 }
 

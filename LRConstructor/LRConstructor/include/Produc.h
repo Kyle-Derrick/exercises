@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <vector>
+#include <algorithm>
 #include "KyleBase.h"
 #include "Symbol.h"
 
@@ -29,7 +30,7 @@ public:
 	Produc(string str, Symbol left, string arrow, vector<Symbol> right);
 	~Produc();
 	//通过解析字符串生成产生式对象
-	static vector<Produc> identify(const vector<string>& terminators,
+	static Symbol identify(const vector<string>& terminators,
 		const vector<string>& non_terminators, vector<Produc>& producs, 
 		const string& arrow, const string& str, const string& delim);
 };

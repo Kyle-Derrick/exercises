@@ -20,6 +20,8 @@ public:
 	Symbol(string str, SymbolType type);
 	string getStr();
 	SymbolType getType();
+	bool operator==(const Symbol& symbol);
+	bool operator==(const string& symbol);
 	static vector<Symbol> str_to_symbols(const vector<string>& terminators,
 		const vector<string>& non_terminators,
 		vector<Symbol>& symbols, const string& str);

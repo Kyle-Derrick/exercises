@@ -60,3 +60,21 @@ vector<Symbol> Symbol::str_to_symbols(const vector<string>& terminators,
 	}
 	return symbols;
 }
+
+bool Symbol::operator==(const Symbol& symbol)
+{
+	if (this->str == symbol.str && this->type == symbol.type)
+	{
+		return true;
+	}
+	return false;
+}
+
+bool Symbol::operator==(const string& symbol)
+{
+	if (this->str == symbol)
+	{
+		return true;
+	}
+	return false;
+}
