@@ -14,6 +14,7 @@ private:
 public:
 	LRTableBuilder(LRContext* context);
 	void start();
+	Produc build_expand_produc();
 };
 
 #endif // !_LALR_CONSTRUCTOR_TABLE_BUILDER_

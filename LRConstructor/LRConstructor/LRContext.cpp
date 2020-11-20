@@ -151,7 +151,22 @@ Produc* LRContext::get_produc(size_t no)
 	return &this->producs.at(no);
 }
 
-set<size_t>* LRContext::getProducNos(const string& symbol)
+string LRContext::get_arrow()
+{
+	return this->arrow;
+}
+
+Symbol& LRContext::get_start_symbol()
+{
+	return this->start_symbol;
+}
+
+set<size_t>* LRContext::get_produc_nos(const string& symbol)
 {
 	return &produc_map[symbol];
+}
+
+bool LRContext::non_terminators_exist(const string& symbol)
+{
+	return find(non_terminators.begin(), non_terminators.end(), symbol) != non_terminators.end();
 }

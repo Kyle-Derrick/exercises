@@ -1,4 +1,3 @@
-#include "ProducItemGroup.h"
 #include "include\ProducItemGroup.h"
 
 bool ProducItemGroup::operator==(const ProducItemGroup& group)

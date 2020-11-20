@@ -28,8 +28,10 @@ public:
 	static LRContext init(string fpath);
 	void test();
 	Produc* get_produc(size_t no);
-	set<size_t>* getProducNos(const string& symbol);
-	bool non_terminators_exist()
+	string get_arrow();
+	Symbol& get_start_symbol();
+	set<size_t>* get_produc_nos(const string& symbol);
+	bool non_terminators_exist(const string& symbol);
 };
 
 #endif
