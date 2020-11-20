@@ -1,10 +1,19 @@
 #pragma once
-#ifndef _LALR_CONSTRUCTOR_TABLE_BUILDER_
-#define _LALR_CONSTRUCTOR_TABLE_BUILDER_
+#ifndef _LR_CONSTRUCTOR_TABLE_BUILDER_
+#define _LR_CONSTRUCTOR_TABLE_BUILDER_
+#include <iostream>
+#include "LRContext.h"
+
+using namespace std;
 
 class LRTableBuilder
 {
+private:
+	LRContext* context;
 
+public:
+	LRTableBuilder(LRContext* context);
+	void start();
 };
 
 #endif // !_LALR_CONSTRUCTOR_TABLE_BUILDER_

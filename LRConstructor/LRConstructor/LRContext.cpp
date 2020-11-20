@@ -3,7 +3,7 @@
 void LRContext::produc_analyze(
 	const string& line, const string& arrow, const string& delim, const vector<string>& terminators,
 	const vector<string>& non_terminators, vector<Produc>& producs,
-	map<string, vector<size_t>>& produc_map)
+	map<string, set<size_t>>& produc_map)
 {
 	if (non_terminators.empty() || terminators.empty())
 	{
@@ -14,7 +14,7 @@ void LRContext::produc_analyze(
 	Symbol left = Produc::identify(terminators, non_terminators, producs, arrow, line, delim);
 	for (; i < producs.size(); i++)
 	{
-		produc_map[left.getStr()].push_back(i);
+		produc_map[left.getStr()].insert(i);
 	}
 }
 
@@ -33,7 +33,7 @@ LRContext LRContext::init(string fpath)
 	vector<string> terminators;
 	vector<string> non_terminators;
 	vector<Produc> producs;
-	map<string, vector<size_t>> produc_map;
+	map<string, set<size_t>> produc_map;
 	int status = -1;
 	while (!fin.eof())
 	{
@@ -133,11 +133,25 @@ void LRContext::test()
 	cout << "> ²úÉúÊ½map: " << endl;
 	for (auto& p : produc_map)
 	{
-		cout << p.first << ": ";
+		cout << "-: " << p.first << ": ";
 		for (size_t s : p.second)
 		{
-			cout <<s;
+			cout << s << '\t';
 		}
 		cout << endl;
 	}
+}
+
+Produc* LRContext::get_produc(size_t no)
+{
+	if (no >= this->producs.size())
+	{
+		return nullptr;
+	}
+	return &this->producs.at(no);
+}
+
+set<size_t>* LRContext::getProducNos(const string& symbol)
+{
+	return &produc_map[symbol];
 }

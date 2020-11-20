@@ -1,6 +1,6 @@
 #pragma once
-#ifndef _LALR_CONSTRUCTOR_SYMBOL_
-#define _LALR_CONSTRUCTOR_SYMBOL_
+#ifndef _LR_CONSTRUCTOR_SYMBOL_
+#define _LR_CONSTRUCTOR_SYMBOL_
 #include <iostream>
 #include <vector>
 

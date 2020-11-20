@@ -29,6 +29,7 @@ public:
 	vector<Symbol> getRight();
 	Produc(string str, Symbol left, string arrow, vector<Symbol> right);
 	~Produc();
+	bool operator==(const Produc& p);
 	//通过解析字符串生成产生式对象
 	static Symbol identify(const vector<string>& terminators,
 		const vector<string>& non_terminators, vector<Produc>& producs, 

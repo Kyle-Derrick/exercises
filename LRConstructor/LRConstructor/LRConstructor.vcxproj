@@ -145,6 +145,7 @@
     <ClCompile Include="LRTableBuilder.cpp" />
     <ClCompile Include="Produc.cpp" />
     <ClCompile Include="ProducItem.cpp" />
+    <ClCompile Include="ProducItemGroup.cpp" />
     <ClCompile Include="Symbol.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -153,6 +154,7 @@
     <ClInclude Include="include\LRTableBuilder.h" />
     <ClInclude Include="include\Produc.h" />
     <ClInclude Include="include\ProducItem.h" />
+    <ClInclude Include="include\ProducItemGroup.h" />
     <ClInclude Include="include\Symbol.h" />
   </ItemGroup>
   <ItemGroup>

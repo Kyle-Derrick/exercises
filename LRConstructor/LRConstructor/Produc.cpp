@@ -33,6 +33,11 @@ Produc::~Produc()
 	vector<Symbol>().swap(this->right);
 }
 
+bool Produc::operator==(const Produc& p)
+{
+	return this->str == p.str;
+}
+
 Symbol Produc::identify(const vector<string>& terminators,
 	const vector<string>& non_terminators, vector<Produc>& producs, const string& arrow, const string& str, const string& delim)
 {
