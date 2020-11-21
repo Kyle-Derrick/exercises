@@ -299,23 +299,27 @@ void LRTableBuilder::generate_table(vector<vector<string>>& action_table, vector
 				{
 					if (item->produc == context->get_produc(0))
 					{
-						action_table[now_no][action_width] = "acc";
+						//action_table[now_no][action_width] = "acc";
+						set_table_node(action_table, now_no, action_width, "acc");
 					}
 					else
 					{
 						for (string p_symbol : item->prospects)
 						{
-							action_table[now_no][get_action_no(p_symbol)] = "r" + to_string(item->get_no());
+							//action_table[now_no][get_action_no(p_symbol)] = "r" + to_string(item->get_no());
+							set_table_node(action_table, now_no, get_action_no(p_symbol), "r" + to_string(item->get_no()));
 						}
 					}
 				}
 				if (tmp_symbol.getType() == SymbolType::NON_TERMINATOR)
 				{
-					goto_table[last_no][get_goto_no(tmp_symbol.getStr())] = to_string(now_no);
+					//goto_table[last_no][get_goto_no(tmp_symbol.getStr())] = to_string(now_no);
+					set_table_node(goto_table, last_no, get_goto_no(tmp_symbol.getStr()), to_string(now_no));
 				}
 				else if (item->cursor != 0)
 				{
-					action_table[last_no][get_action_no(tmp_symbol.getStr())] = "s" + to_string(now_no);
+					//action_table[last_no][get_action_no(tmp_symbol.getStr())] = "s" + to_string(now_no);
+					set_table_node(action_table, last_no, get_action_no(tmp_symbol.getStr()), "s" + to_string(now_no));
 				}
 			}
 			if (finish_status.find(now_no) == finish_status.end())
@@ -355,4 +359,21 @@ ostream& LRTableBuilder::out_table(ostream& out, const vector<vector<string>>& a
 	}
 
 	return out;
+}
+
+void LRTableBuilder::set_table_node(vector<vector<string>>& table, size_t row, size_t col, string str)
+{
+
+	if (row >= table.size() || col >= table[row].size())
+	{
+		cerr << "存入表数据时超出表格大小！" << endl;
+		exit(EXIT_FAILURE);
+	}
+	string& s = table[row][col];
+	if (!s.empty() && s != str)
+	{
+		cerr << "存入表数据时单元格数据不唯一！" << endl;
+		exit(EXIT_FAILURE);
+	}
+	s = str;
 }

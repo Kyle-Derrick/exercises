@@ -34,6 +34,7 @@ private:
 	size_t get_action_no(string str);
 	size_t get_goto_no(string str);
 	ostream& out_table(ostream& out, const vector<vector<string>>& action_table, const vector<vector<string>>& goto_table);
+	void set_table_node(vector<vector<string>>& table, size_t row, size_t col, string str);
 
 public:
 	LRTableBuilder(LRContext* context);
