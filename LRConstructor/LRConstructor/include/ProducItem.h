@@ -13,14 +13,14 @@ class ProducItem
 {
 private:
 	size_t produc_no;
-	Produc* produc;
-	LRContext* context;
+public:
+	const Produc* produc;
 	size_t cursor;
 	set<string> prospects;
-public:
-	ProducItem(size_t produc_no, LRContext* context);
-
-	bool operator==(const ProducItem& item);
+	ProducItem(size_t produc_no, const Produc* p);
+	size_t get_no();
+	bool statute();
+	bool operator==(const ProducItem& item)const;
 };
 
 #endif

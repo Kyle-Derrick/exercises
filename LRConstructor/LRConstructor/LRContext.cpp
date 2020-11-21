@@ -33,6 +33,8 @@ LRContext LRContext::init(string fpath)
 	vector<string> terminators;
 	vector<string> non_terminators;
 	vector<Produc> producs;
+	//占位，扩展文法时用到
+	producs.push_back(Produc());
 	map<string, set<size_t>> produc_map;
 	int status = -1;
 	while (!fin.eof())
@@ -159,6 +161,11 @@ string LRContext::get_arrow()
 Symbol& LRContext::get_start_symbol()
 {
 	return this->start_symbol;
+}
+
+void LRContext::set_expand_produc(const Produc& p)
+{
+	*this->producs.begin() = p;
 }
 
 set<size_t>* LRContext::get_produc_nos(const string& symbol)

@@ -36,9 +36,6 @@
     <ClCompile Include="ProducItem.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="ProducItemGroup.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\LRContext.h">
@@ -57,9 +54,6 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="include\ProducItem.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="include\ProducItemGroup.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

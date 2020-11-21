@@ -1,8 +1,10 @@
 #include "include/Symbol.h"
 
+const string Symbol::EPSILON("¦Å");
+
 Symbol::Symbol()
 {
-	this->str = "¦Å";
+	this->str = EPSILON;
 	this->type = SymbolType::TERMINATOR;
 }
 
@@ -12,12 +14,12 @@ Symbol::Symbol(string str, SymbolType type)
 	this->type = type;
 }
 
-string Symbol::getStr()
+string Symbol::getStr() const
 {
 	return this->str;
 }
 
-SymbolType Symbol::getType()
+SymbolType Symbol::getType() const
 {
 	return this->type;
 }
@@ -61,7 +63,7 @@ vector<Symbol> Symbol::str_to_symbols(const vector<string>& terminators,
 	return symbols;
 }
 
-bool Symbol::operator==(const Symbol& symbol)
+bool Symbol::operator==(const Symbol& symbol) const
 {
 	if (this->str == symbol.str && this->type == symbol.type)
 	{
@@ -70,7 +72,7 @@ bool Symbol::operator==(const Symbol& symbol)
 	return false;
 }
 
-bool Symbol::operator==(const string& symbol)
+bool Symbol::operator==(const string& symbol) const
 {
 	if (this->str == symbol)
 	{

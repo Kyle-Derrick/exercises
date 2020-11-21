@@ -1,24 +1,27 @@
 #include "include\Produc.h"
 
-string Produc::getStr()
+string Produc::getStr() const
 {
 	return this->str;
 }
 
-Symbol Produc::getLeft()
+Symbol Produc::getLeft() const
 {
 	return this->left;
 }
 
-string Produc::getArrow()
+string Produc::getArrow() const
 {
 	return this->arrow;
 }
 
-vector<Symbol> Produc::getRight()
+vector<Symbol> Produc::getRight() const
 {
 	return this->right;
 }
+
+Produc::Produc()
+{}
 
 Produc::Produc(string str, Symbol left, string arrow, vector<Symbol> right)
 {
@@ -33,7 +36,7 @@ Produc::~Produc()
 	vector<Symbol>().swap(this->right);
 }
 
-bool Produc::operator==(const Produc& p)
+bool Produc::operator==(const Produc& p) const
 {
 	return this->str == p.str;
 }

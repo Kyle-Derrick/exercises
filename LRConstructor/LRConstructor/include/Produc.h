@@ -23,13 +23,14 @@ private:
 	//产生式右侧符号集
 	vector<Symbol> right;
 public:
-	string getStr();
-	Symbol getLeft();
-	string getArrow();
-	vector<Symbol> getRight();
+	string getStr() const;
+	Symbol getLeft() const;
+	string getArrow() const;
+	vector<Symbol> getRight() const;
+	Produc();
 	Produc(string str, Symbol left, string arrow, vector<Symbol> right);
 	~Produc();
-	bool operator==(const Produc& p);
+	bool operator==(const Produc& p) const;
 	//通过解析字符串生成产生式对象
 	static Symbol identify(const vector<string>& terminators,
 		const vector<string>& non_terminators, vector<Produc>& producs, 
