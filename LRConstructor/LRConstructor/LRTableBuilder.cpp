@@ -29,6 +29,14 @@ bool ProducItemGroup::operator==(const ProducItemGroup& g) const
 	return true;
 }
 
+vector<ProducItemGroup*>::iterator ProducItemGroup::find_from_vector(vector<ProducItemGroup*>& v)
+{
+	ProducItemGroup* tmp = this;
+	return find_if(v.begin(), v.end(), [tmp](ProducItemGroup* value) {
+		return *tmp == *value;
+		});
+}
+
 LRTableBuilder::LRTableBuilder(LRContext* context)
 {
 	this->context = context;
@@ -73,6 +81,9 @@ void LRTableBuilder::start()
 	}
 
 	//生成分析表
+	vector<vector<string>> action_table;
+	vector<vector<string>> goto_table;
+	generate_table(action_table, goto_table);
 
 	//写入文件
 	//ofstream fout("lr.table");
@@ -84,16 +95,7 @@ void LRTableBuilder::start()
 	//context->output(fout);
 	context->output(cout);
 
-
-	cout << groups.size() << endl;
-	for (ProducItemGroup* g : groups)
-	{
-		cout << "----------------" << endl;
-		for (ProducItem* p : g->items)
-		{
-			cout << p->produc.getStr() << ',' << p->cursor << ',' << p->produc.getRight().size() << endl;
-		}
-	}
+	out_table(cout, action_table, goto_table);
 }
 
 LRTableBuilder::~LRTableBuilder()
@@ -167,7 +169,7 @@ void LRTableBuilder::next(ProducItemGroup* group)
 		}
 		Symbol symbol = item->produc.getRight().at(item->cursor);
 		ProducItemGroup* tmp_group;
-		auto iter = group->next_group_nos.find(symbol.getStr());
+		auto iter = group->next_group_nos.find(symbol);
 		bool isnew = true;
 		if (iter != group->next_group_nos.end())
 		{
@@ -182,7 +184,7 @@ void LRTableBuilder::next(ProducItemGroup* group)
 		tmp_group->items.push_back(tmp_item);
 		if (isnew)
 		{
-			group->next_group_nos[symbol.getStr()] = tmp_group;
+			group->next_group_nos[symbol] = tmp_group;
 			groups.push_back(tmp_group);
 		}
 	}
@@ -245,23 +247,90 @@ void LRTableBuilder::generate_table(vector<vector<string>>& action_table, vector
 	goto_table.resize(col_size);
 	for (vector<string>& v : action_table)
 	{
-		v.resize(action_width);
+		v.resize(action_width+1);
 	}
 	for (vector<string>& v : goto_table)
 	{
 		v.resize(goto_width);
 	}
 
-	stack<size_t> tmp_stack;
-	tmp_stack.push(0);
-	size_t last_status = 0;
+	stack<ProducItemGroup*> tmp_stack;
+	tmp_stack.push(groups[0]);
+	set<size_t> finish_status;
 	while (!tmp_stack.empty())
 	{
-		ProducItemGroup* group = groups[tmp_stack.top()];
+		ProducItemGroup* group = tmp_stack.top();
+		tmp_stack.pop();
+		size_t last_no = group->find_from_vector(groups) - groups.begin();
 		for (const auto& kvpair : group->next_group_nos)
 		{
 			ProducItemGroup* item_group = kvpair.second;
-
+			//获取状态编号
+			size_t now_no = item_group->find_from_vector(groups) - groups.begin();
+			if (finish_status.find(now_no) != finish_status.end())
+			{
+				continue;
+			}
+			finish_status.insert(now_no);
+			for (ProducItem* item : item_group->items)
+			{
+				if (item->statute())
+				{
+					Symbol tmp_symbol = kvpair.first;
+					//Symbol& tmp_symbol = item->produc.getRight()[item->cursor-1];
+					if (item->produc == context->get_produc(0))
+					{
+						action_table[now_no][action_width] = "acc";
+					} else if (tmp_symbol.getType() == SymbolType::TERMINATOR/* && !(item->produc.getLeft() == context->get_produc(0).getLeft())*/)
+					{
+						action_table[now_no][get_action_no(tmp_symbol.getStr())] = "r" + to_string(item->get_no());
+					}
+				}
+				else if (item->cursor != 0)
+				{
+					Symbol tmp_symbol = kvpair.first;
+					//Symbol& tmp_symbol = item->produc.getRight()[item->cursor-1];
+					if (tmp_symbol.getType() == SymbolType::TERMINATOR)
+					{
+						action_table[now_no][get_action_no(tmp_symbol.getStr())] = "s" + to_string(now_no);
+					}
+					else
+					{
+						goto_table[now_no][get_goto_no(tmp_symbol.getStr())] = to_string(now_no);
+					}
+				}
+			}
+			tmp_stack.push(kvpair.second);
 		}
 	}
+}
+
+size_t LRTableBuilder::get_action_no(string str)
+{
+	return find(context->terminators_source.begin(), context->terminators_source.end(), str) - context->terminators_source.begin();
+}
+
+size_t LRTableBuilder::get_goto_no(string str)
+{
+	return find(context->non_terminators_source.begin(), context->non_terminators_source.end(), str) - context->non_terminators_source.begin();
+}
+
+ostream& LRTableBuilder::out_table(ostream& out, const vector<vector<string>>& action_table, const vector<vector<string>>& goto_table)
+{
+	for (size_t i = 0; i < action_table.size(); i++)
+	{
+		string tmp;
+		for (size_t j = 0; j < 2; j++)
+		{
+			for (string str : (j ? goto_table[i] : action_table[i]))
+			{
+				tmp.insert(tmp.end(), str.begin(), str.end());
+				tmp.push_back(',');
+			}
+		}
+		tmp.pop_back();
+		out << tmp << endl;
+	}
+
+	return out;
 }

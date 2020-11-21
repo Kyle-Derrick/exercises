@@ -68,3 +68,11 @@ ProducItem* ProducItem::clone_puls()
 	tmp_item->prospects.insert(this->prospects.begin(), this->prospects.end());
 	return tmp_item;
 }
+
+vector<ProducItem*>::iterator ProducItem::find_from_vector(vector<ProducItem*>& v)
+{
+	ProducItem& tmp = *this;
+	return find_if(v.begin(), v.end(), [tmp](ProducItem* value) {
+		return tmp == *value;
+		});
+}

@@ -77,7 +77,7 @@ LRContext LRContext::init(string fpath)
 				}
 				arrow = tmp.at(0);
 				start_symbol = tmp.at(1);
-				if (tmp.size() > 2)
+				if (tmp.size() > 2 && !tmp[2].empty())
 				{
 					delim = tmp.at(2);
 				}

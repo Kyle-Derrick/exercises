@@ -25,6 +25,7 @@ public:
 	bool operator==(const ProducItem& item)const;
 	ProducItem& operator=(const ProducItem& item);
 	ProducItem* clone_puls();
+	vector<ProducItem*>::iterator find_from_vector(vector<ProducItem*>& v);
 };
 
 #endif
