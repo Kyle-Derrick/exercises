@@ -96,6 +96,21 @@ void LRTableBuilder::start()
 	context->output(cout);
 
 	out_table(cout, action_table, goto_table);
+
+	for (ProducItemGroup* g : groups)
+	{
+		cout << "-----------------" << endl;
+		for (ProducItem* i : g->items)
+		{
+			cout << i->produc.getStr();
+			cout << ',' << i->cursor;
+			for (string s : i->prospects)
+			{
+				cout << ',' << s;
+			}
+			cout << endl;
+		}
+	}
 }
 
 LRTableBuilder::~LRTableBuilder()
@@ -146,14 +161,24 @@ void LRTableBuilder::handle(ProducItemGroup* group)
 				});
 			if (iter != group->items.end())
 			{
-				set_prospects(item->next_prospects(), (*iter)->prospects);
+				//set_prospects(item->next_prospects(), (*iter)->prospects);
 				delete tmp_item;
+				tmp_item = *iter;
 			}
 			else
 			{
-				tmp_item->prospects.insert(item->prospects.begin(), item->prospects.end());
-				set_prospects(item->next_prospects(), tmp_item->prospects);
+				//tmp_item->prospects.insert(item->prospects.begin(), item->prospects.end());
+				//set_prospects(item->next_prospects(), tmp_item->prospects);
 				group->items.push_back(tmp_item);
+			}
+			Symbol p_symbol = item->next_prospects();
+			if (p_symbol == Symbol::get_end_symbol())
+			{
+				tmp_item->prospects.insert(item->prospects.begin(), item->prospects.end());
+			}
+			else
+			{
+				set_prospects(item->next_prospects(), tmp_item->prospects);
 			}
 		}
 	}
@@ -265,42 +290,39 @@ void LRTableBuilder::generate_table(vector<vector<string>>& action_table, vector
 		for (const auto& kvpair : group->next_group_nos)
 		{
 			ProducItemGroup* item_group = kvpair.second;
+			Symbol tmp_symbol = kvpair.first;
 			//»ñÈ¡×´Ì¬±àºÅ
 			size_t now_no = item_group->find_from_vector(groups) - groups.begin();
-			if (finish_status.find(now_no) != finish_status.end())
-			{
-				continue;
-			}
-			finish_status.insert(now_no);
 			for (ProducItem* item : item_group->items)
 			{
 				if (item->statute())
 				{
-					Symbol tmp_symbol = kvpair.first;
-					//Symbol& tmp_symbol = item->produc.getRight()[item->cursor-1];
 					if (item->produc == context->get_produc(0))
 					{
 						action_table[now_no][action_width] = "acc";
-					} else if (tmp_symbol.getType() == SymbolType::TERMINATOR/* && !(item->produc.getLeft() == context->get_produc(0).getLeft())*/)
-					{
-						action_table[now_no][get_action_no(tmp_symbol.getStr())] = "r" + to_string(item->get_no());
-					}
-				}
-				else if (item->cursor != 0)
-				{
-					Symbol tmp_symbol = kvpair.first;
-					//Symbol& tmp_symbol = item->produc.getRight()[item->cursor-1];
-					if (tmp_symbol.getType() == SymbolType::TERMINATOR)
-					{
-						action_table[now_no][get_action_no(tmp_symbol.getStr())] = "s" + to_string(now_no);
 					}
 					else
 					{
-						goto_table[now_no][get_goto_no(tmp_symbol.getStr())] = to_string(now_no);
+						for (string p_symbol : item->prospects)
+						{
+							action_table[now_no][get_action_no(p_symbol)] = "r" + to_string(item->get_no());
+						}
 					}
 				}
+				if (tmp_symbol.getType() == SymbolType::NON_TERMINATOR)
+				{
+					goto_table[last_no][get_goto_no(tmp_symbol.getStr())] = to_string(now_no);
+				}
+				else if (item->cursor != 0)
+				{
+					action_table[last_no][get_action_no(tmp_symbol.getStr())] = "s" + to_string(now_no);
+				}
 			}
-			tmp_stack.push(kvpair.second);
+			if (finish_status.find(now_no) == finish_status.end())
+			{
+				tmp_stack.push(kvpair.second);
+				finish_status.insert(now_no);
+			}
 		}
 	}
 }
