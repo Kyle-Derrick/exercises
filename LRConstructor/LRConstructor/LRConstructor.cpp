@@ -5,8 +5,6 @@
 
 using namespace std;
 
-void constructor(LRContext context);
-
 int main()
 {
     cout << "> 读取配置..." << endl;
@@ -15,9 +13,4 @@ int main()
 
     LRTableBuilder(&context).start();
 
-}
-
-void constructor(LRContext context)
-{
-    
 }
