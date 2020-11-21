@@ -16,13 +16,16 @@ private:
 	string str;
 	SymbolType type;
 public:
-	static const string EPSILON;;
+	static const string EPSILON;
+	static const string END;
 	Symbol();
 	Symbol(string str, SymbolType type);
 	string getStr() const;
 
 	SymbolType getType() const;
+	static Symbol get_end_symbol();
 	bool operator==(const Symbol& symbol) const;
+	bool operator<(const Symbol& symbol) const;
 	bool operator==(const string& symbol) const;
 	static vector<Symbol> str_to_symbols(const vector<string>& terminators,
 		const vector<string>& non_terminators,

@@ -30,6 +30,8 @@ LRContext LRContext::init(string fpath)
 	string arrow;
 	string start_symbol;
 	string delim;
+	vector<string> terminators_source;
+	vector<string> non_terminators_source;
 	vector<string> terminators;
 	vector<string> non_terminators;
 	vector<Produc> producs;
@@ -82,10 +84,12 @@ LRContext LRContext::init(string fpath)
 				break;
 			case 1:
 				terminators.insert(terminators.end(), tmp.begin(), tmp.end());
+				terminators_source.insert(terminators_source.end(), tmp.begin(), tmp.end());
 				kyle::sort_by_len(terminators);
 				break;
 			case 2:
 				non_terminators.insert(non_terminators.end(), tmp.begin(), tmp.end());
+				non_terminators_source.insert(non_terminators_source.end(), tmp.begin(), tmp.end());
 				kyle::sort_by_len(non_terminators);
 				break;
 			case 3:
@@ -99,6 +103,8 @@ LRContext LRContext::init(string fpath)
 
 	LRContext context;
 	context.arrow = arrow;
+	context.terminators_source = terminators_source;
+	context.non_terminators_source = non_terminators_source;
 	context.terminators = terminators;
 	context.non_terminators = non_terminators;
 	context.producs = producs;
@@ -144,13 +150,13 @@ void LRContext::test()
 	}
 }
 
-Produc* LRContext::get_produc(size_t no)
+Produc LRContext::get_produc(size_t no)
 {
 	if (no >= this->producs.size())
 	{
-		return nullptr;
+		return Produc();
 	}
-	return &this->producs.at(no);
+	return this->producs.at(no);
 }
 
 string LRContext::get_arrow()
@@ -176,4 +182,28 @@ set<size_t>* LRContext::get_produc_nos(const string& symbol)
 bool LRContext::non_terminators_exist(const string& symbol)
 {
 	return find(non_terminators.begin(), non_terminators.end(), symbol) != non_terminators.end();
+}
+
+ostream& LRContext::output(ostream& out)
+{
+	for (string str : this->terminators_source)
+	{
+		out << str << ',';
+	}
+	out << Symbol::END;
+	for (string str : this->non_terminators_source)
+	{
+		out << ',' << str;
+	}
+	out << endl;
+	//输出表达式
+	out << this->arrow;
+	vector<Produc>::iterator iter = this->producs.begin();
+	while (++iter != producs.end())
+	{
+		Produc& p = *iter;
+		out << ',' << p.getStr();
+	}
+	out << endl;
+	return out;
 }

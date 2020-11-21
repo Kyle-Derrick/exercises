@@ -76,7 +76,7 @@ Symbol Produc::identify(const vector<string>& terminators,
 			cerr << estr << endl;
 			exit(EXIT_FAILURE);
 		}
-		producs.push_back(Produc(str, left, arrow, right));
+		producs.push_back(Produc(left.getStr()+arrow+s, left, arrow, right));
 	}
 	return left;
 }

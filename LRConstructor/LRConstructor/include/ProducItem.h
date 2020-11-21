@@ -14,13 +14,17 @@ class ProducItem
 private:
 	size_t produc_no;
 public:
-	const Produc* produc;
+	Produc produc;
 	size_t cursor;
 	set<string> prospects;
-	ProducItem(size_t produc_no, const Produc* p);
+	ProducItem(size_t produc_no, Produc p);
 	size_t get_no();
 	bool statute();
+	Symbol next_prospects();
+	bool identical(const ProducItem& item)const;
 	bool operator==(const ProducItem& item)const;
+	ProducItem& operator=(const ProducItem& item);
+	ProducItem* clone_puls();
 };
 
 #endif
