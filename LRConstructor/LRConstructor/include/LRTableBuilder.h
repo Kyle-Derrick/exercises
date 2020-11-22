@@ -13,11 +13,15 @@ using namespace std;
 
 class ProducItemGroup
 {
+private:
+	bool equals(const ProducItemGroup& g, bool(*fun)(ProducItem*, ProducItem*)) const;
 public:
 	vector<ProducItem*> items;
 	map<Symbol, ProducItemGroup*> next_group_nos;
 	~ProducItemGroup();
-	bool operator==(const ProducItemGroup& g) const;
+	bool operator==(const ProducItemGroup& g) const; 
+		bool identical(const ProducItemGroup& g) const;
+	void merge_and_clear(const ProducItemGroup& g);
 	vector<ProducItemGroup*>::iterator find_from_vector(vector<ProducItemGroup*>& v);
 };
 
@@ -35,11 +39,13 @@ private:
 	size_t get_goto_no(string str);
 	ostream& out_table(ostream& out, const vector<vector<string>>& action_table, const vector<vector<string>>& goto_table);
 	void set_table_node(vector<vector<string>>& table, size_t row, size_t col, string str);
+	void try_lalr();
+	void test();
 
 public:
 	LRTableBuilder(LRContext* context);
 	~LRTableBuilder();
-	void start();
+	void start(const string& outfile);
 };
 
 #endif // !_LALR_CONSTRUCTOR_TABLE_BUILDER_

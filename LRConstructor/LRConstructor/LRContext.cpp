@@ -110,6 +110,7 @@ LRContext LRContext::init(string fpath)
 	context.producs = producs;
 	context.start_symbol = Symbol(start_symbol, SymbolType::NON_TERMINATOR);
 	context.produc_map = produc_map;
+	fin.close();
     return context;
 }
 

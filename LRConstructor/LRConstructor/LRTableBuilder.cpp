@@ -1,5 +1,26 @@
 #include "include/LRTableBuilder.h"
 
+bool ProducItemGroup::equals(const ProducItemGroup& g, bool(*fun)(ProducItem*, ProducItem*)) const
+{
+	if (this->items.size() != g.items.size())
+	{
+		return false;
+	}
+	for (size_t i = 0; i < this->items.size(); i++)
+	{
+		ProducItem* tmp = this->items[i];
+		if (find_if(g.items.begin(), g.items.end(), [tmp,fun](ProducItem* value) {
+			//return tmp->identical(*value);
+			//return *tmp == *value;
+			return fun(tmp, value);
+			}) == g.items.end())
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
 ProducItemGroup::~ProducItemGroup()
 {
 	while (!items.empty())
@@ -11,29 +32,46 @@ ProducItemGroup::~ProducItemGroup()
 
 bool ProducItemGroup::operator==(const ProducItemGroup& g) const
 {
-	if (this->items.size() != g.items.size())
-	{
-		return false;
-	}
+	return this->equals(g, [] (ProducItem* v1, ProducItem* v2) {
+		return *v1 == *v2;
+	});
+}
+
+bool ProducItemGroup::identical(const ProducItemGroup& g) const
+{
+	return this->equals(g, [](ProducItem* v1, ProducItem* v2) {
+		return v1->identical(*v2);
+		});
+}
+
+void ProducItemGroup::merge_and_clear(const ProducItemGroup& g)
+{
 	for (size_t i = 0; i < this->items.size(); i++)
 	{
 		ProducItem* tmp = this->items[i];
-		if (find_if(g.items.begin(), g.items.end(), [tmp](ProducItem* value) {
-				return tmp->identical(*value);
-				//return *tmp == *value;
-			}) == g.items.end())
+		if (tmp->cursor == 0 && tmp->get_no()!=0)
 		{
-			return false;
+			this->items.erase(this->items.begin()+i);
+			i--;
+		}
+		else
+		{
+			auto iter = find_if(g.items.begin(), g.items.end(), [tmp](ProducItem* value) {
+				return *tmp == *value;
+				});
+			if (iter != g.items.end())
+			{
+				tmp->prospects.insert((*iter)->prospects.begin(), (*iter)->prospects.end());
+			}
 		}
 	}
-	return true;
 }
 
 vector<ProducItemGroup*>::iterator ProducItemGroup::find_from_vector(vector<ProducItemGroup*>& v)
 {
 	ProducItemGroup* tmp = this;
 	return find_if(v.begin(), v.end(), [tmp](ProducItemGroup* value) {
-		return *tmp == *value;
+		return tmp->identical(*value);
 		});
 }
 
@@ -42,7 +80,7 @@ LRTableBuilder::LRTableBuilder(LRContext* context)
 	this->context = context;
 }
 
-void LRTableBuilder::start()
+void LRTableBuilder::start(const string& outfile)
 {
 	Produc expand_produc = build_expand_produc();
 	context->set_expand_produc(expand_produc);
@@ -61,16 +99,6 @@ void LRTableBuilder::start()
 	groups.push_back(group);
 	handle(group);
 
-	//for (ProducItem* item:group->items)
-	//{
-	//	cout << "--------" << endl;
-	//	cout << item->get_no() << endl;
-	//	for (string s : item->prospects)
-	//	{
-	//		cout << s << endl;
-	//	}
-	//}
-
 	for (size_t i = 0; i < groups.size(); i++)
 	//for (ProducItemGroup* g : groups)
 	{
@@ -80,37 +108,39 @@ void LRTableBuilder::start()
 
 	}
 
+	vector<ProducItemGroup*> tmp = groups;
+	cout << "开始尝试LALR..." << endl;
+	try_lalr();
+
 	//生成分析表
 	vector<vector<string>> action_table;
 	vector<vector<string>> goto_table;
-	generate_table(action_table, goto_table);
+	try
+	{
+		generate_table(action_table, goto_table);
+	}
+	catch (const string& estr)
+	{
+		cerr << "尝试转化为LALR时出错: " << estr << endl;
+		groups = tmp;
+		generate_table(action_table, goto_table);
+	}
 
 	//写入文件
-	//ofstream fout("lr.table");
-	//if (!fout.is_open())
-	//{
-	//	cerr << "打开输出文件时失败：" << endl;
-	//	exit(EXIT_FAILURE);
-	//}
-	//context->output(fout);
-	context->output(cout);
+	ofstream fout(outfile);
+	if (!fout.is_open())
+	{
+		cerr << "打开输出文件时失败：" << endl;
+		exit(EXIT_FAILURE);
+	}
+	context->output(fout);
+	out_table(fout, action_table, goto_table);
+	fout.close();
 
+	context->output(cout);
 	out_table(cout, action_table, goto_table);
 
-	for (ProducItemGroup* g : groups)
-	{
-		cout << "-----------------" << endl;
-		for (ProducItem* i : g->items)
-		{
-			cout << i->produc.getStr();
-			cout << ',' << i->cursor;
-			for (string s : i->prospects)
-			{
-				cout << ',' << s;
-			}
-			cout << endl;
-		}
-	}
+	test();
 }
 
 LRTableBuilder::~LRTableBuilder()
@@ -217,9 +247,8 @@ void LRTableBuilder::next(ProducItemGroup* group)
 	{
 		ProducItemGroup* tmp_group = kvpair.second;
 		handle(tmp_group);
-
 		auto tmp_iter = find_if(groups.begin(), groups.end(), [tmp_group](ProducItemGroup* value) {
-			return *tmp_group == *value && tmp_group != value;
+			return tmp_group->identical(*value) && tmp_group != value;
 			});
 		if (tmp_iter != groups.end())
 		{
@@ -302,8 +331,7 @@ void LRTableBuilder::generate_table(vector<vector<string>>& action_table, vector
 						//action_table[now_no][action_width] = "acc";
 						set_table_node(action_table, now_no, action_width, "acc");
 					}
-					else
-					{
+					else {
 						for (string p_symbol : item->prospects)
 						{
 							//action_table[now_no][get_action_no(p_symbol)] = "r" + to_string(item->get_no());
@@ -313,8 +341,11 @@ void LRTableBuilder::generate_table(vector<vector<string>>& action_table, vector
 				}
 				if (tmp_symbol.getType() == SymbolType::NON_TERMINATOR)
 				{
-					//goto_table[last_no][get_goto_no(tmp_symbol.getStr())] = to_string(now_no);
-					set_table_node(goto_table, last_no, get_goto_no(tmp_symbol.getStr()), to_string(now_no));
+					if (!(item->produc.getLeft() == context->get_produc(0).getLeft()))
+					{
+						//goto_table[last_no][get_goto_no(tmp_symbol.getStr())] = to_string(now_no);
+						set_table_node(goto_table, last_no, get_goto_no(tmp_symbol.getStr()), to_string(now_no));
+					}
 				}
 				else if (item->cursor != 0)
 				{
@@ -372,8 +403,69 @@ void LRTableBuilder::set_table_node(vector<vector<string>>& table, size_t row, s
 	string& s = table[row][col];
 	if (!s.empty() && s != str)
 	{
-		cerr << "存入表数据时单元格数据不唯一！" << endl;
-		exit(EXIT_FAILURE);
+		throw "存入表数据时单元格数据不唯一！";
+		/*cerr << "存入表数据时单元格数据不唯一！" << endl;
+		exit(EXIT_FAILURE);*/
 	}
 	s = str;
+}
+
+void LRTableBuilder::try_lalr()
+{
+	map<ProducItemGroup*, ProducItemGroup*> change_map;
+	for (size_t i = 0; i < groups.size(); i++)
+	{
+		ProducItemGroup* group = groups[i];
+		vector<ProducItemGroup*>::iterator iter;
+		while (true)
+		{
+			iter = find_if(groups.begin() + i + 1, groups.end(), [group](ProducItemGroup* value) {
+				return *value == *group;
+				});
+			if (iter != groups.end())
+			{
+				change_map[*iter] = group;
+				group->merge_and_clear(**iter);
+				groups.erase(iter);
+			}
+			else
+			{
+				break;
+			}
+		}
+
+	}
+
+	
+	for (ProducItemGroup* group : groups)
+	{
+		for (pair<Symbol, ProducItemGroup*> kvpair : group->next_group_nos)
+		{
+			map<ProducItemGroup*, ProducItemGroup*>::iterator iter = change_map.find(kvpair.second);
+			if (iter != change_map.end())
+			{
+				group->next_group_nos[kvpair.first] = (*iter).second;
+			}
+		}
+	}
+}
+
+void LRTableBuilder::test()
+{
+	context->output(cout);
+
+	for (ProducItemGroup* g : groups)
+	{
+		cout << "-----------------" << endl;
+		for (ProducItem* i : g->items)
+		{
+			cout << i->produc.getStr();
+			cout << ',' << i->cursor;
+			for (string s : i->prospects)
+			{
+				cout << ',' << s;
+			}
+			cout << endl;
+		}
+	}
 }

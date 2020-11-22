@@ -5,12 +5,40 @@
 
 using namespace std;
 
-int main()
+int main(int argc, char *argv[])
 {
-    cout << "> 读取配置..." << endl;
-    LRContext context = LRContext::init("LRConstructor.conf");
-    //LRContext context = LRContext::init("D:\\LRConstructor.conf");
+    cout << "--- LR1 or LALR constructor by Kyle --- " << endl;
+    string infile;
+    if (argc < 2)
+    {
+        while (true)
+        {
+            cout << "请输入配置文件路径: " << endl;
+            cin >> infile;
+            if (!infile.empty())
+            {
+                break;
+            }
+        }
+    }
+    else
+    {
+        infile = argv[1];
+    }
+    string outfile;
+    if (argc < 3)
+    {
+        outfile = "LR.table.csv";
+    }
+    else
+    {
+        outfile = argv[2];
+    }
 
-    LRTableBuilder(&context).start();
+    cout << "> 读取配置..." << endl;
+    LRContext context = LRContext::init(infile);
+    //LRContext context = LRContext::init("C:\\LRConstructor.conf");
+
+    LRTableBuilder(&context).start(outfile);
 
 }
