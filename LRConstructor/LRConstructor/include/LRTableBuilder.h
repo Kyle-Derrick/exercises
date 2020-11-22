@@ -21,7 +21,8 @@ public:
 	~ProducItemGroup();
 	bool operator==(const ProducItemGroup& g) const; 
 		bool identical(const ProducItemGroup& g) const;
-	void merge_and_clear(const ProducItemGroup& g);
+	void merge(const ProducItemGroup& g);
+	void clear_non_core();
 	vector<ProducItemGroup*>::iterator find_from_vector(vector<ProducItemGroup*>& v);
 };
 

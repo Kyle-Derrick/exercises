@@ -44,25 +44,29 @@ bool ProducItemGroup::identical(const ProducItemGroup& g) const
 		});
 }
 
-void ProducItemGroup::merge_and_clear(const ProducItemGroup& g)
+void ProducItemGroup::merge(const ProducItemGroup& g)
+{
+	for (ProducItem* tmp : g.items)
+	{
+		auto iter = find_if(g.items.begin(), g.items.end(), [tmp](ProducItem* value) {
+			return *tmp == *value;
+			});
+		if (iter != g.items.end())
+		{
+			tmp->prospects.insert((*iter)->prospects.begin(), (*iter)->prospects.end());
+		}
+	}
+}
+
+void ProducItemGroup::clear_non_core()
 {
 	for (size_t i = 0; i < this->items.size(); i++)
 	{
 		ProducItem* tmp = this->items[i];
-		if (tmp->cursor == 0 && tmp->get_no()!=0)
+		if (tmp->cursor == 0)
 		{
-			this->items.erase(this->items.begin()+i);
+			this->items.erase(this->items.begin() + i);
 			i--;
-		}
-		else
-		{
-			auto iter = find_if(g.items.begin(), g.items.end(), [tmp](ProducItem* value) {
-				return *tmp == *value;
-				});
-			if (iter != g.items.end())
-			{
-				tmp->prospects.insert((*iter)->prospects.begin(), (*iter)->prospects.end());
-			}
 		}
 	}
 }
@@ -316,49 +320,116 @@ void LRTableBuilder::generate_table(vector<vector<string>>& action_table, vector
 		ProducItemGroup* group = tmp_stack.top();
 		tmp_stack.pop();
 		size_t last_no = group->find_from_vector(groups) - groups.begin();
+
+		size_t now_no = group->find_from_vector(groups) - groups.begin();
+		for (ProducItem* item : group->items)
+		{
+			if (item->statute())
+			{
+				if (!(item->produc.getLeft() == context->get_produc(0).getLeft()))
+				{
+					for (string p_symbol : item->prospects)
+					{
+						set_table_node(action_table, now_no, get_action_no(p_symbol), "r" + to_string(item->get_no()));
+					}
+				}
+				else
+				{
+					set_table_node(action_table, now_no, action_width, "acc");
+				}
+			}
+			/*else
+			{
+				Symbol tmp_symbol = item->produc.getRight()[item->cursor];
+				auto iter = group->next_group_nos.find(tmp_symbol);
+				if (iter != group->next_group_nos.end())
+				{
+					size_t next_no = (*iter).second->find_from_vector(groups) - groups.begin();
+					if (tmp_symbol.getType() == SymbolType::NON_TERMINATOR)
+					{
+						set_table_node(goto_table, now_no, get_goto_no(tmp_symbol.getStr()), to_string(next_no));
+					}
+					else
+					{
+						set_table_node(action_table, now_no, get_action_no(tmp_symbol.getStr()), "s" + to_string(next_no));
+					}
+				}
+			}*/
+		}
+
 		for (const auto& kvpair : group->next_group_nos)
 		{
 			ProducItemGroup* item_group = kvpair.second;
 			Symbol tmp_symbol = kvpair.first;
-			//»ñÈ¡×´Ì¬±àºÅ
-			size_t now_no = item_group->find_from_vector(groups) - groups.begin();
-			for (ProducItem* item : item_group->items)
+			size_t next_no;
+			if (item_group == group)
 			{
-				if (item->statute())
-				{
-					if (item->produc == context->get_produc(0))
-					{
-						//action_table[now_no][action_width] = "acc";
-						set_table_node(action_table, now_no, action_width, "acc");
-					}
-					else {
-						for (string p_symbol : item->prospects)
-						{
-							//action_table[now_no][get_action_no(p_symbol)] = "r" + to_string(item->get_no());
-							set_table_node(action_table, now_no, get_action_no(p_symbol), "r" + to_string(item->get_no()));
-						}
-					}
-				}
-				if (tmp_symbol.getType() == SymbolType::NON_TERMINATOR)
-				{
-					if (!(item->produc.getLeft() == context->get_produc(0).getLeft()))
-					{
-						//goto_table[last_no][get_goto_no(tmp_symbol.getStr())] = to_string(now_no);
-						set_table_node(goto_table, last_no, get_goto_no(tmp_symbol.getStr()), to_string(now_no));
-					}
-				}
-				else if (item->cursor != 0)
-				{
-					//action_table[last_no][get_action_no(tmp_symbol.getStr())] = "s" + to_string(now_no);
-					set_table_node(action_table, last_no, get_action_no(tmp_symbol.getStr()), "s" + to_string(now_no));
-				}
+				next_no = now_no;
 			}
-			if (finish_status.find(now_no) == finish_status.end())
+			else {
+				next_no = item_group->find_from_vector(groups) - groups.begin();
+			}
+
+			if (tmp_symbol.getType() == SymbolType::NON_TERMINATOR)
+			{
+				set_table_node(goto_table, now_no, get_goto_no(tmp_symbol.getStr()), to_string(next_no));
+			}
+			else
+			{
+				set_table_node(action_table, now_no, get_action_no(tmp_symbol.getStr()), "s" + to_string(next_no));
+			}
+			//ÈëÕ»
+			if (finish_status.find(next_no) == finish_status.end())
 			{
 				tmp_stack.push(kvpair.second);
-				finish_status.insert(now_no);
+				finish_status.insert(next_no);
 			}
 		}
+
+
+		//for (const auto& kvpair : group->next_group_nos)
+		//{
+		//	ProducItemGroup* item_group = kvpair.second;
+		//	Symbol tmp_symbol = kvpair.first;
+		//	//»ñÈ¡×´Ì¬±àºÅ
+		//	size_t now_no = item_group->find_from_vector(groups) - groups.begin();
+		//	for (ProducItem* item : item_group->items)
+		//	{
+		//		if (item->statute())
+		//		{
+		//			if (item->produc == context->get_produc(0))
+		//			{
+		//				//action_table[now_no][action_width] = "acc";
+		//				set_table_node(action_table, now_no, action_width, "acc");
+		//			}
+		//			else {
+		//				for (string p_symbol : item->prospects)
+		//				{
+		//					//action_table[now_no][get_action_no(p_symbol)] = "r" + to_string(item->get_no());
+		//					set_table_node(action_table, now_no, get_action_no(p_symbol), "r" + to_string(item->get_no()));
+		//				}
+		//			}
+		//		}
+		//		if (tmp_symbol.getType() == SymbolType::NON_TERMINATOR)
+		//		{
+		//			if (!(item->produc.getLeft() == context->get_produc(0).getLeft()))
+		//			{
+		//				//goto_table[last_no][get_goto_no(tmp_symbol.getStr())] = to_string(now_no);
+		//				set_table_node(goto_table, last_no, get_goto_no(tmp_symbol.getStr()), to_string(now_no));
+		//			}
+		//		}
+		//		else if (item->cursor != 0)
+		//		{
+		//			//action_table[last_no][get_action_no(tmp_symbol.getStr())] = "s" + to_string(now_no);
+		//			set_table_node(action_table, last_no, get_action_no(tmp_symbol.getStr()), "s" + to_string(now_no));
+		//		}
+		//	}
+		//	if (finish_status.find(now_no) == finish_status.end())
+		//	{
+		//		tmp_stack.push(kvpair.second);
+		//		finish_status.insert(now_no);
+		//	}
+		//}
 	}
 }
 
@@ -416,20 +487,21 @@ void LRTableBuilder::try_lalr()
 	for (size_t i = 0; i < groups.size(); i++)
 	{
 		ProducItemGroup* group = groups[i];
-		vector<ProducItemGroup*>::iterator iter;
 		while (true)
 		{
-			iter = find_if(groups.begin() + i + 1, groups.end(), [group](ProducItemGroup* value) {
+			vector<ProducItemGroup*>::iterator iter = 
+				find_if(groups.begin() + i + 1, groups.end(), [group](ProducItemGroup* value) {
 				return *value == *group;
 				});
 			if (iter != groups.end())
 			{
 				change_map[*iter] = group;
-				group->merge_and_clear(**iter);
+				group->merge(**iter);
 				groups.erase(iter);
 			}
 			else
 			{
+				group->clear_non_core();
 				break;
 			}
 		}
