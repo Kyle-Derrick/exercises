@@ -61,7 +61,7 @@ Symbol Produc::identify(const vector<string>& terminators,
 	}
 	else
 	{
-		kyle::split(tmp, str.substr(index), "|");
+		kyle::split(tmp, str.substr(index), delim);
 	}
 	for (string s : tmp) {
 		kyle::trim(s);
