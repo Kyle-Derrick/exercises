@@ -6,17 +6,24 @@
 
 enum class SymbolType
 {
-	TERMINATOR, NON_TERMINATOR
+	//终结符
+	TERMINATOR, 
+	//非终结符
+	NON_TERMINATOR
 };
 
 using namespace std;
 class Symbol
 {
 private:
+	//符号字符串
 	string str;
+	//符号类型
 	SymbolType type;
 public:
+	//空串字符
 	static const string EPSILON;
+	//结束符
 	static const string END;
 	Symbol();
 	Symbol(string str, SymbolType type);
@@ -27,6 +34,7 @@ public:
 	bool operator==(const Symbol& symbol) const;
 	bool operator<(const Symbol& symbol) const;
 	bool operator==(const string& symbol) const;
+	//根据字符串生成符号类
 	static vector<Symbol> str_to_symbols(const vector<string>& terminators,
 		const vector<string>& non_terminators,
 		vector<Symbol>& symbols, const string& str);

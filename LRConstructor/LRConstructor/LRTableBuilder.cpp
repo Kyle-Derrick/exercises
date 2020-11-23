@@ -10,8 +10,6 @@ bool ProducItemGroup::equals(const ProducItemGroup& g, bool(*fun)(ProducItem*, P
 	{
 		ProducItem* tmp = this->items[i];
 		if (find_if(g.items.begin(), g.items.end(), [tmp,fun](ProducItem* value) {
-			//return tmp->identical(*value);
-			//return *tmp == *value;
 			return fun(tmp, value);
 			}) == g.items.end())
 		{
@@ -46,7 +44,7 @@ bool ProducItemGroup::identical(const ProducItemGroup& g) const
 
 void ProducItemGroup::merge(const ProducItemGroup& g)
 {
-	for (ProducItem* tmp : g.items)
+	for (ProducItem* tmp : this->items)
 	{
 		auto iter = find_if(g.items.begin(), g.items.end(), [tmp](ProducItem* value) {
 			return *tmp == *value;
@@ -111,7 +109,7 @@ void LRTableBuilder::start(const string& outfile)
 		next(g);
 
 	}
-
+	
 	vector<ProducItemGroup*> tmp = groups;
 	cout << "开始尝试LALR..." << endl;
 	try_lalr();
@@ -144,7 +142,7 @@ void LRTableBuilder::start(const string& outfile)
 	context->output(cout);
 	out_table(cout, action_table, goto_table);
 
-	test();
+	//test();
 }
 
 LRTableBuilder::~LRTableBuilder()
@@ -201,8 +199,6 @@ void LRTableBuilder::handle(ProducItemGroup* group)
 			}
 			else
 			{
-				//tmp_item->prospects.insert(item->prospects.begin(), item->prospects.end());
-				//set_prospects(item->next_prospects(), tmp_item->prospects);
 				group->items.push_back(tmp_item);
 			}
 			Symbol p_symbol = item->next_prospects();
@@ -338,23 +334,6 @@ void LRTableBuilder::generate_table(vector<vector<string>>& action_table, vector
 					set_table_node(action_table, now_no, action_width, "acc");
 				}
 			}
-			/*else
-			{
-				Symbol tmp_symbol = item->produc.getRight()[item->cursor];
-				auto iter = group->next_group_nos.find(tmp_symbol);
-				if (iter != group->next_group_nos.end())
-				{
-					size_t next_no = (*iter).second->find_from_vector(groups) - groups.begin();
-					if (tmp_symbol.getType() == SymbolType::NON_TERMINATOR)
-					{
-						set_table_node(goto_table, now_no, get_goto_no(tmp_symbol.getStr()), to_string(next_no));
-					}
-					else
-					{
-						set_table_node(action_table, now_no, get_action_no(tmp_symbol.getStr()), "s" + to_string(next_no));
-					}
-				}
-			}*/
 		}
 
 		for (const auto& kvpair : group->next_group_nos)
@@ -385,51 +364,6 @@ void LRTableBuilder::generate_table(vector<vector<string>>& action_table, vector
 				finish_status.insert(next_no);
 			}
 		}
-
-
-		//for (const auto& kvpair : group->next_group_nos)
-		//{
-		//	ProducItemGroup* item_group = kvpair.second;
-		//	Symbol tmp_symbol = kvpair.first;
-		//	//获取状态编号
-		//	size_t now_no = item_group->find_from_vector(groups) - groups.begin();
-		//	for (ProducItem* item : item_group->items)
-		//	{
-		//		if (item->statute())
-		//		{
-		//			if (item->produc == context->get_produc(0))
-		//			{
-		//				//action_table[now_no][action_width] = "acc";
-		//				set_table_node(action_table, now_no, action_width, "acc");
-		//			}
-		//			else {
-		//				for (string p_symbol : item->prospects)
-		//				{
-		//					//action_table[now_no][get_action_no(p_symbol)] = "r" + to_string(item->get_no());
-		//					set_table_node(action_table, now_no, get_action_no(p_symbol), "r" + to_string(item->get_no()));
-		//				}
-		//			}
-		//		}
-		//		if (tmp_symbol.getType() == SymbolType::NON_TERMINATOR)
-		//		{
-		//			if (!(item->produc.getLeft() == context->get_produc(0).getLeft()))
-		//			{
-		//				//goto_table[last_no][get_goto_no(tmp_symbol.getStr())] = to_string(now_no);
-		//				set_table_node(goto_table, last_no, get_goto_no(tmp_symbol.getStr()), to_string(now_no));
-		//			}
-		//		}
-		//		else if (item->cursor != 0)
-		//		{
-		//			//action_table[last_no][get_action_no(tmp_symbol.getStr())] = "s" + to_string(now_no);
-		//			set_table_node(action_table, last_no, get_action_no(tmp_symbol.getStr()), "s" + to_string(now_no));
-		//		}
-		//	}
-		//	if (finish_status.find(now_no) == finish_status.end())
-		//	{
-		//		tmp_stack.push(kvpair.second);
-		//		finish_status.insert(now_no);
-		//	}
-		//}
 	}
 }
 
