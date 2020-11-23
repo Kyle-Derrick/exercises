@@ -137,6 +137,7 @@ void LRTableBuilder::start(const string& outfile)
 	}
 	context->output(fout);
 	out_table(fout, action_table, goto_table);
+
 	fout.close();
 
 	context->output(cout);
@@ -379,6 +380,7 @@ size_t LRTableBuilder::get_goto_no(string str)
 
 ostream& LRTableBuilder::out_table(ostream& out, const vector<vector<string>>& action_table, const vector<vector<string>>& goto_table)
 {
+	out << "[analysis-table]" << endl;
 	for (size_t i = 0; i < action_table.size(); i++)
 	{
 		string tmp;
@@ -393,6 +395,8 @@ ostream& LRTableBuilder::out_table(ostream& out, const vector<vector<string>>& a
 		tmp.pop_back();
 		out << tmp << endl;
 	}
+	out << "#[error-list]" << endl;
+	out << "#´íÎóÐÅÏ¢" << flush;
 
 	return out;
 }

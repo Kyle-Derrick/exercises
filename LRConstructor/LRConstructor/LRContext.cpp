@@ -187,6 +187,7 @@ bool LRContext::non_terminators_exist(const string& symbol)
 
 ostream& LRContext::output(ostream& out)
 {
+	out << "[symbol-list]" << endl;
 	for (string str : this->terminators_source)
 	{
 		out << str << ',';
@@ -198,6 +199,7 @@ ostream& LRContext::output(ostream& out)
 	}
 	out << endl;
 	//输出表达式
+	out << "[productor-list]" << endl;
 	out << this->arrow;
 	vector<Produc>::iterator iter = this->producs.begin();
 	while (++iter != producs.end())

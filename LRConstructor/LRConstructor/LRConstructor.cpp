@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
     string outfile;
     if (argc < 3)
     {
-        outfile = "LR.table.csv";
+        outfile = "LR.table.conf";
     }
     else
     {
