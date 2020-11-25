@@ -88,30 +88,31 @@ LRAnalyze& LRAnalyze::init(string str)
 void LRAnalyze::analyze()
 {
 	bool next = true;
-	cout << "\n>> 分析句子开始...:\n" << endl;
+	/*cout << "\n>> 分析句子开始...:\n" << endl;
 	cout << left << setw(14) << "" << setw(16) << "栈" << " | ";
 	cout << setw(8) << "" << setw(12) << "输入" << " | ";
 	cout << setw(3) << "" << setw(22) << "分析动作";
-	cout << endl;
+	cout << endl;*/
 	while (next)
 	{
 		Node top = *--analyze_stack.end();
 		Symbol symbol = symbols.at(0);
 		TableUnit unit = this->context.action_search(symbol.getType(), top.status);
 
-		print_status(cout);
-		string outstr;
+		//print_status(cout);
+		//string outstr;
 		switch (unit.getType())
 		{
 			//移进
 		case UnitType::SHIFT:
 			stack_push(symbol, unit.getValue());
 			symbols.erase(symbols.begin());
-			outstr = "Shift " + to_string(unit.getValue());
+			//outstr = "Shift " + to_string(unit.getValue());
 			break;
 			//规约
 		case UnitType::REDUCE:
-			outstr = "Reduce by " + reduce(unit, symbol);
+			//outstr = "Reduce by " + 
+			reduce(unit, symbol);
 			break;
 			//错误
 		case UnitType::ERROR:
@@ -121,14 +122,12 @@ void LRAnalyze::analyze()
 		case UnitType::ACC:
 			/*next = false;
 			outstr = "Accept";*/
-			cout << setw(25) << left << "Accept";
-			cout << endl;
 			cout << "\n> 计算结果: " << *(double*)top.symbol.getValue() << endl;
 			return;
 			//break;
 		}
 
-		cout << setw(25) << left << outstr;
-		cout << endl;
+		//cout << setw(25) << left << outstr;
+		//cout << endl;
 	}
 }

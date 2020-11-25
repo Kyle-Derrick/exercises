@@ -11,22 +11,22 @@ int AppContext::lineType(string line)
     else if (line == "[symbol-list]")
     {
         type = 1;
-        cout << "\n>> <解析符号列表>" << endl;
+        //cout << "\n>> <解析符号列表>" << endl;
     }
     else if (line == "[productor-list]")
     {
         type = 2;
-        cout << "\n>> <解析产生式列表>" << endl;
+        //cout << "\n>> <解析产生式列表>" << endl;
     }
     else if (line == "[analysis-table]")
     {
         type = 3;
-        cout << "\n>> <解析分析表>" << endl;
+        //cout << "\n>> <解析分析表>" << endl;
     }
     else if (line == "[error-list]")
     {
         type = 4;
-        cout << "\n>> <解析错误信息列表>" << endl;
+        //cout << "\n>> <解析错误信息列表>" << endl;
     }
     return type;
 }
@@ -209,7 +209,7 @@ AppContext AppContext::init(string f)
         }
         else
         {
-            cout << line << endl;
+            //cout << line << endl;
             vector<string> tmp;
             kyle::split(tmp, line, delim);
             switch (status)
