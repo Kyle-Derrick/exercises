@@ -139,7 +139,25 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AppContext.cpp" />
     <ClCompile Include="Calculator.cpp" />
+    <ClCompile Include="InitApp.cpp" />
+    <ClCompile Include="KyleBase.cpp" />
+    <ClCompile Include="LexicalAnalysis.cpp" />
+    <ClCompile Include="LRAnalyze.cpp" />
+    <ClCompile Include="Produc.cpp" />
+    <ClCompile Include="Symbol.cpp" />
+    <ClCompile Include="TableUnit.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\AppContext.h" />
+    <ClInclude Include="include\InitApp.h" />
+    <ClInclude Include="include\KyleBase.h" />
+    <ClInclude Include="include\LexicalAnalysis.h" />
+    <ClInclude Include="include\LRAnalyze.h" />
+    <ClInclude Include="include\Produc.h" />
+    <ClInclude Include="include\Symbol.h" />
+    <ClInclude Include="include\TableUnit.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -380,6 +380,7 @@ size_t LRTableBuilder::get_goto_no(string str)
 
 ostream& LRTableBuilder::out_table(ostream& out, const vector<vector<string>>& action_table, const vector<vector<string>>& goto_table)
 {
+	string delim = context->get_delim();
 	out << "[analysis-table]" << endl;
 	for (size_t i = 0; i < action_table.size(); i++)
 	{
@@ -389,7 +390,7 @@ ostream& LRTableBuilder::out_table(ostream& out, const vector<vector<string>>& a
 			for (string str : (j ? goto_table[i] : action_table[i]))
 			{
 				tmp.insert(tmp.end(), str.begin(), str.end());
-				tmp.push_back(',');
+				tmp.append(delim.begin(), delim.end());
 			}
 		}
 		tmp.pop_back();

@@ -18,5 +18,55 @@
     <ClCompile Include="Calculator.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="LexicalAnalysis.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="KyleBase.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Produc.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="TableUnit.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="AppContext.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="LRAnalyze.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Symbol.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="InitApp.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\LexicalAnalysis.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\KyleBase.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\TableUnit.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\AppContext.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\LRAnalyze.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Produc.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Symbol.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\InitApp.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

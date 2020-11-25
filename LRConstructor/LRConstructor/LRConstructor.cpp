@@ -41,4 +41,5 @@ int main(int argc, char *argv[])
 
     LRTableBuilder(&context).start(outfile);
 
+    system("pause");
 }

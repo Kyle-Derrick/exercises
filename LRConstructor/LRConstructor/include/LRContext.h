@@ -24,6 +24,8 @@ private:
 	map<string, set<size_t>> produc_map;
 	//推导符
 	string arrow;
+	//分隔符
+	string delim;
 	//开始符号
 	Symbol start_symbol;
 	//解析产生式
@@ -44,6 +46,7 @@ public:
 	Produc get_produc(size_t no);
 	//获取推导符
 	string get_arrow();
+	string get_delim();
 	//获取开始符号
 	Symbol& get_start_symbol();
 	//设置扩展文法时产生的产生式

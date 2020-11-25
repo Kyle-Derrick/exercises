@@ -29,6 +29,7 @@ LRContext LRContext::init(string fpath)
 	string line;
 	string arrow;
 	string start_symbol;
+	string init_delim = " ";
 	string delim;
 	vector<string> terminators_source;
 	vector<string> non_terminators_source;
@@ -66,7 +67,7 @@ LRContext LRContext::init(string fpath)
 		else
 		{
 			vector<string> tmp;
-			kyle::split(tmp, line, ",");
+			kyle::split(tmp, line, init_delim);
 			switch (status)
 			{
 			case 0:
@@ -80,6 +81,7 @@ LRContext LRContext::init(string fpath)
 				if (tmp.size() > 2 && !tmp[2].empty())
 				{
 					delim = tmp.at(2);
+					init_delim = delim;
 				}
 				break;
 			case 1:
@@ -103,6 +105,7 @@ LRContext LRContext::init(string fpath)
 
 	LRContext context;
 	context.arrow = arrow;
+	context.delim = delim;
 	context.terminators_source = terminators_source;
 	context.non_terminators_source = non_terminators_source;
 	context.terminators = terminators;
@@ -165,6 +168,11 @@ string LRContext::get_arrow()
 	return this->arrow;
 }
 
+string LRContext::get_delim()
+{
+	return this->delim;
+}
+
 Symbol& LRContext::get_start_symbol()
 {
 	return this->start_symbol;
@@ -187,15 +195,16 @@ bool LRContext::non_terminators_exist(const string& symbol)
 
 ostream& LRContext::output(ostream& out)
 {
+	out << this->delim << endl;
 	out << "[symbol-list]" << endl;
 	for (string str : this->terminators_source)
 	{
-		out << str << ',';
+		out << str << this->delim;
 	}
 	out << Symbol::END;
 	for (string str : this->non_terminators_source)
 	{
-		out << ',' << str;
+		out << this->delim << str;
 	}
 	out << endl;
 	//输出表达式
@@ -205,7 +214,7 @@ ostream& LRContext::output(ostream& out)
 	while (++iter != producs.end())
 	{
 		Produc& p = *iter;
-		out << ',' << p.getStr();
+		out << this->delim << p.getStr();
 	}
 	out << endl;
 	return out;
